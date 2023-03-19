@@ -10,3 +10,4 @@
 
 #ignore a.out
 *.out
+*.txt

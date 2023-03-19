@@ -23,18 +23,20 @@
 */
 
 //CONSTANTS
-#define NAMELENGTH 100
+#define NAMEBUFFERSIZE 100
 #define NUM_ENTRY_POINTS 8
 
 //data structure for music node
 typedef struct MUS_NODE {
-    char filename[NAMELENGTH];
     float* weights;
     struct MUS_NODE** links; //array of pointers to other musnodes
+    int namelength;
+    char* filename;
 
 } MUS_NODE; 
 typedef struct PLAYLIST {
     MUS_NODE* entrypoints[NUM_ENTRY_POINTS]; //up to 8 entry points into the playlist. Will be listed. 
+    int nodecount;
     MUS_NODE** nodes; //pointer to array of contiguous pointers to mus_nodes. can't just array mus_nodes as variable size.
 } PLAYLIST;
 
@@ -43,8 +45,8 @@ typedef struct PLAYLIST {
 //FLAGS
 
 int VISUALISE_MODE = 0;
-char INPUT_FILE[NAMELENGTH];
-char OUTPUT_FILE[NAMELENGTH];
+char INPUT_FILE[NAMEBUFFERSIZE];
+char OUTPUT_FILE[NAMEBUFFERSIZE];
 
 static struct option const long_options[] = //see https://linux.die.net/man/3/getopt_long
   { //char *name, int has_arg, int *flag (pointer to load val into if flag true), int val  
@@ -86,46 +88,60 @@ PLAYLIST* readm3u(){
         fprintf (stderr, "File %s is unreadable.\n", INPUT_FILE);
         exit(-1);
     }
-    char c[NAMELENGTH];
-    while (fgets(c, NAMELENGTH, fp)) {
+    char c[NAMEBUFFERSIZE];
+    while (fgets(c, NAMEBUFFERSIZE, fp)) {
         
         numlines += c[strlen(c)-1] == '\n';
         if(c[0] == '\n'){
             numlines--;
         }
     }
-    printf("lines: %d\n", numlines);
+    //printf("lines: %d\n", numlines);
 
     fseek(fp, 0, SEEK_SET);//go back to start
+
+    int numchars[numlines];
+    for(int i=0;i<numlines;i++){ //assuming no spaces between songs... :)
+        fgets(c, NAMEBUFFERSIZE, fp);
+        printf("%s has %lu chars\n", c, strlen(c) + 1);
+        numchars[i] = strlen(c) + 1;
+    }
+
+    fseek(fp, 0, SEEK_SET);//go back to start
+
     int numfiles = numlines;
     PLAYLIST* pl = malloc(sizeof(PLAYLIST));
     // = malloc(sizeof(PLAYLIST)); 
 
     MUS_NODE* lastnode;
     pl->nodes = malloc(numfiles * sizeof(MUS_NODE));
+    pl->nodecount = numfiles;
+    //printf("numfiles * sizeof(MUS_NODE):%lu\n", numfiles * sizeof(MUS_NODE));
+    //printf("plnodes:%i\n", pl->nodecount);
 
     for(int i=0;i<numfiles;i++){
-        printf("size pl:%lu\n, size node:%lu\n", sizeof(PLAYLIST), sizeof(MUS_NODE));
+        //printf("size pl:%lu\n, size node:%lu\n", sizeof(PLAYLIST), sizeof(MUS_NODE));
         MUS_NODE* m = malloc(sizeof(MUS_NODE));
-        printf("i:%i\n", i);
+        //printf("i:%i\n", i);
 
         if(i==0){
             m->links = NULL; 
             m->weights = NULL;
-            printf("size m->l:%lu\n", sizeof(m->links));
+            //printf("size m->l:%lu\n", sizeof(m->links));
         } else {
             m->links = calloc(1,  1 * sizeof(MUS_NODE**)); //allocating size here. 1 represents number of links this node has to others. Basic link so this. Will deep copy and reallocate to grow
             m->weights = calloc(1,  1 * sizeof(MUS_NODE**));
             //MUS_NODE* lastsong = lastnode; 
             m->links[0] = lastnode;
             m->weights[0] = 1.0f;
-            printf("sizelinks:%lu\n", sizeof(m->links)); //can we use this to find length of array, so no need for null termination and calloc()? (yes)
+            //printf("sizelinks:%lu\n", sizeof(m->links)); //can we use this to find length of array, so no need for null termination and calloc()? (yes)
         }
-
-        fgets(m->filename, NAMELENGTH, fp);
-        printf("fb:%s\n", m->filename);
-        printf("plnodesi:%lu\n", sizeof(pl->nodes));
-        printf("m:%lu\n", sizeof(m));
+        m->filename = malloc(numchars[i] * sizeof(char));
+        fgets(m->filename, NAMEBUFFERSIZE, fp);
+        m->namelength = numchars[i];
+        printf("filename:%ssize(bytes):%lu\n\n", m->filename, numchars[i] * sizeof(char));
+        //printf("plnodes:%lu\n", sizeof(pl->nodes));
+        //printf("m:%lu\n", sizeof(m));
         
         pl->nodes[i] = m;
         lastnode = m;
@@ -142,7 +158,8 @@ int main(int argc, char *argv[]) {
     printf("input: %s, output:%s, visualise:%i\n",INPUT_FILE ,OUTPUT_FILE, VISUALISE_MODE);
     printf("sizeof(MUS_NODE): %lu\n", sizeof(MUS_NODE));
     PLAYLIST * pl = readm3u();
-    for(unsigned long i=0;i<sizeof(pl->nodes);i++){
-        printf("%s\n", pl->nodes[i]->filename);
+    printf("sizeof(pl->nodes):%lu\n", pl->nodecount);
+    for(int i=0;i<pl->nodecount;i++){
+        //printf("%s\n", pl->nodes[i]->filename);
     }
 }
