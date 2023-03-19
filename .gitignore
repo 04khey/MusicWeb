@@ -8,6 +8,7 @@
 # Unignore all dirs
 !*/
 
-#ignore a.out
+#ignore a.out and m3us
 *.out
 *.txt
+*.m3u

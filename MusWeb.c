@@ -83,7 +83,7 @@ PLAYLIST* readm3u(){
     //determine number of mp3s (lines)
     //malloc 8 * sizeof(MUS_NODE*) + numfiles * sizeof(MUS_NODE*) + numfiles * sizeof(MUS_NODE) + numfiles * sizeof(MUS_NODE*)
     FILE* fp = fopen(INPUT_FILE, "r"); //if no fp, return -1
-    int numlines=1;
+    int numlines=0;
     if(fp == NULL){
         fprintf (stderr, "File %s is unreadable.\n", INPUT_FILE);
         exit(-1);
@@ -92,18 +92,18 @@ PLAYLIST* readm3u(){
     while (fgets(c, NAMEBUFFERSIZE, fp)) {
         
         numlines += c[strlen(c)-1] == '\n';
-        if(c[0] == '\n'){
+        if(c[0] == '\n' || c[0] == '\0'){
             numlines--;
+            printf("hit");
         }
     }
-    //printf("lines: %d\n", numlines);
+    printf("lines: %d\n", numlines);
 
     fseek(fp, 0, SEEK_SET);//go back to start
 
     int numchars[numlines];
     for(int i=0;i<numlines;i++){ //assuming no spaces between songs... :)
         fgets(c, NAMEBUFFERSIZE, fp);
-        printf("%s has %lu chars\n", c, strlen(c) + 1);
         numchars[i] = strlen(c) + 1;
     }
 
@@ -136,12 +136,14 @@ PLAYLIST* readm3u(){
             m->weights[0] = 1.0f;
             //printf("sizelinks:%lu\n", sizeof(m->links)); //can we use this to find length of array, so no need for null termination and calloc()? (yes)
         }
-        m->filename = malloc(numchars[i] * sizeof(char));
-        fgets(m->filename, NAMEBUFFERSIZE, fp);
-        m->namelength = numchars[i];
-        printf("filename:%ssize(bytes):%lu\n\n", m->filename, numchars[i] * sizeof(char));
-        //printf("plnodes:%lu\n", sizeof(pl->nodes));
-        //printf("m:%lu\n", sizeof(m));
+        m->filename = malloc((numchars[i]-1) * sizeof(char));
+        char temp[numchars[i]];
+        fgets(temp, NAMEBUFFERSIZE, fp);
+        strncpy(m->filename, temp, numchars[i] -1);
+        m->filename[numchars[i]-2]  = '\0';
+        //fgets(m->filename, NAMEBUFFERSIZE, fp);
+        m->namelength = numchars[i] - 2;
+        //printf("filename:%ssize(bytes):%lu\n\n", m->filename, numchars[i] * sizeof(char));
         
         pl->nodes[i] = m;
         lastnode = m;
@@ -155,11 +157,12 @@ int main(int argc, char *argv[]) {
     if (load_opts(argc, argv)){
         return -1; //incorrect kwargs
     }
-    printf("input: %s, output:%s, visualise:%i\n",INPUT_FILE ,OUTPUT_FILE, VISUALISE_MODE);
+    //printf("input: %s, output:%s, visualise:%i\n",INPUT_FILE ,OUTPUT_FILE, VISUALISE_MODE);
     printf("sizeof(MUS_NODE): %lu\n", sizeof(MUS_NODE));
     PLAYLIST * pl = readm3u();
-    printf("sizeof(pl->nodes):%lu\n", pl->nodecount);
+    //printf("sizeof(pl->nodes):%lu\n", pl->nodecount);
     for(int i=0;i<pl->nodecount;i++){
-        //printf("%s\n", pl->nodes[i]->filename);
+        printf("FILE CALLED %s\n", pl->nodes[i]->filename);
+        //printf("\n%cchar code: %u", pl->nodes[i]->filename[0], pl->nodes[i]->filename[0]);
     }
 }
