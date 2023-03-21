@@ -33,6 +33,7 @@
 //data structure for music node
 typedef struct MUS_NODE {
     float* weights;
+    int numlinks;
     struct MUS_NODE** links; //array of pointers to other musnodes
     int namelength;
     char* filename;
@@ -128,6 +129,7 @@ PLAYLIST* readm3u(){
 
         if(i==0){
             m->links = calloc(1,  1 * sizeof(MUS_NODE**)); //allocating size here. 1 represents number of links this node has to others. Basic link so this. Will deep copy and reallocate to grow
+            m->numlinks = 1;
             m->weights = calloc(1,  1 * sizeof(MUS_NODE**));
             pl->entrypoints[0] = m;
             
@@ -135,6 +137,7 @@ PLAYLIST* readm3u(){
 
         } else{
             m->links = calloc(1,  1 * sizeof(MUS_NODE**)); //allocating size here. 1 represents number of links this node has to others. Basic link so this. Will deep copy and reallocate to grow
+            m->numlinks = 1;
             m->weights = calloc(1,  1 * sizeof(MUS_NODE**));
             lastnode->links[0] = m;
             lastnode->weights[0] = 1.0f;
@@ -182,6 +185,47 @@ MUS_NODE* selectEntryNode(int height, int width){
     return pl.entrypoints[in];
 }
 
+int FILE_EXISTS(char * filename){
+    return access(filename, F_OK) == 0;
+}
+
+int createAndAppendNode(MUS_NODE * parent, char * filename, float parentweight)
+{
+    //assumes playlist exists
+    MUS_NODE * m = malloc(sizeof(MUS_NODE));
+    m->filename = filename;
+    m->numlinks = 0;
+
+    //add weight to parent
+    float * tempweights = parent->weights;
+    parent->weights = malloc(sizeof(float) * (parent->numlinks + 1));
+    for(int i=0;i<parent->numlinks;i++){
+        parent->weights[i] = tempweights[i];
+    }
+    parent->weights[parent->numlinks] = parentweight;
+    free(tempweights);
+
+    //add node pointer to parent
+    MUS_NODE ** templinks = parent->links;
+    parent->links = malloc((parent->numlinks + 1) * sizeof(MUS_NODE*));
+    for(int i=0;i<parent->numlinks;i++){
+        parent->links[i] = templinks[i];
+    }
+    parent->links[parent->numlinks] = m;
+    parent->numlinks++;
+
+    //append m to playlist so it doesn't get free'd once this scope closes
+    MUS_NODE ** tempnodes = pl.nodes; 
+    pl.nodes = malloc((pl.nodecount + 1) * sizeof(MUS_NODE *));
+    for(int i=0;i<pl.nodecount;i++){
+        pl.nodes[i] = tempnodes[i];
+    }
+    pl.nodes[pl.nodecount] = m;
+    free(tempnodes);
+    pl.nodecount++;
+
+}
+
 void traverseWeb(){
     /*display current song
     * display links and weights
@@ -200,6 +244,7 @@ void traverseWeb(){
     for(int i=0;i<width;i++){
         putchar('=');
     } putchar('\n');
+
     printf("\nSelect Marking Start Node:\n[0]: %s\n[1]: Select from EntryNodes\n[2]: Enter exact file string (plus terminator)\n", pl.nodes[0]->filename);
     //6
     for(int i=0;i<height-7;i++){
@@ -215,13 +260,70 @@ void traverseWeb(){
         case '0': currnode = pl.nodes[0];
         break;
         case '1': currnode = selectEntryNode(height, width);
+        break;
+        case '2': //TODO
+        exit(-9001);
+        break;
     }
-    //printf("%s\n", in);
+
+    //we will use this later. Moved here to fix stack-use-after-scope.
+    char toadd[40]; //should really be NAMEBUFFERSIZE
+    strcpy(toadd, "e");
+
+    //now we have currnode
+    while (strcmp(in, "X")){
+        printf("CURRENT NODE: %s\nX:exit\na:add child\ne:edit children\n\n[SELECT #]:Song(Relative Weight)\n", currnode->filename);
+        for(int i=0;i<currnode->numlinks;i++){
+            printf("[%i]:%s(%f)\n",i, currnode->links[i]->filename, currnode->weights[i]);
+        }
+        for(int j=currnode->numlinks;j<height-6;j++){
+            putchar('\n');
+        }
+        scanf("%39s", in);
+        int c = atoi(in);
+        if(c || !strcmp(in, "0")){
+            currnode = currnode->links[c];
+        } else{
+            if(!strcmp(in, "a")){
+                printf( "\e[2J" ); //clear term
+                printf("Appending to node: %s\n", currnode->filename);
+                printf("Current children:\n");
+                for(int i=0;i<currnode->numlinks;i++){
+                    printf("[%i]:%s(%f)\n",i, currnode->links[i]->filename, currnode->weights[i]);
+                }
+                for(int j=currnode->numlinks;j<height-4;j++){
+                    putchar('\n');
+                }
+                printf("File URI to add:\n");
+                
+                char temp[40];
+                double toweight;
+                
+                while(!FILE_EXISTS(toadd)){
+                fgets(toadd, 39, stdin);
+                
+                if ((strlen(toadd) > 0) && (toadd[strlen (toadd) - 1] == '\n'))
+                toadd[strlen (toadd) - 1] = '\0';
+
+                if(FILE_EXISTS(toadd)){
+                    printf("FILE EXISTS!!!!!1\n");
+                    printf("enter desired relative weight:\n");
+                    scanf("%39s", temp);
+                    toweight = atof(temp);
+                    createAndAppendNode(currnode, toadd, toweight);
+                    printf("toadd:%s", toadd);
+                    }
+                }
+            }
+
+            }
+        }
+    }
 
 
-}
 
 int main(int argc, char *argv[]) {
+    
     if (load_opts(argc, argv)){
         return -1; //incorrect kwargs
     }
