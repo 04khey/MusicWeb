@@ -3,28 +3,32 @@
 #include <getopt.h> //for flag parsing
 #include <string.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
 
 /**
 * Will probably do
 * DEPENDENCIES :
 * cmus-remote
 * cmus
-* mpg123?
+* mpg123?(no)
 */
 
 
 /**TODO:
-* Lazy track selection via cmus feedback 
+* Lazy track selection (buffer) via cmus feedback 
+* read from STDIN
+* playlist viewer (CLI)
 * Add node to existing playlist
 * Unicode support? ✓
+* Interface with cmus:
 * Detect nonexistent songs 
 * Support for skipping
-* interface with cmus
+* Hashmap on song names for quick lookup for playlist merging (will never do lol)
 */
 
 //CONSTANTS
 #define NAMEBUFFERSIZE 100
-#define NUM_ENTRY_POINTS 8
+//#define NUM_ENTRY_POINTS 8
 
 //data structure for music node
 typedef struct MUS_NODE {
@@ -35,10 +39,14 @@ typedef struct MUS_NODE {
 
 } MUS_NODE; 
 typedef struct PLAYLIST {
-    MUS_NODE* entrypoints[NUM_ENTRY_POINTS]; //up to 8 entry points into the playlist. Will be listed. 
+    int entrypointcount;
+    MUS_NODE** entrypoints; //entry points into the playlist. Will be listed.
     int nodecount;
     MUS_NODE** nodes; //pointer to array of contiguous pointers to mus_nodes. can't just array mus_nodes as variable size.
 } PLAYLIST;
+
+//GLOBALS
+PLAYLIST pl;
 
 
 
@@ -112,6 +120,8 @@ PLAYLIST* readm3u(){
     MUS_NODE* lastnode;
     pl->nodes = malloc(numfiles * sizeof(MUS_NODE *));
     pl->nodecount = numfiles;
+    pl->entrypointcount = 1;
+    pl->entrypoints = malloc (1 * sizeof(MUS_NODE *));
 
     for(int i=0;i<numfiles;i++){
         MUS_NODE* m = malloc(sizeof(MUS_NODE));
@@ -119,6 +129,8 @@ PLAYLIST* readm3u(){
         if(i==0){
             m->links = calloc(1,  1 * sizeof(MUS_NODE**)); //allocating size here. 1 represents number of links this node has to others. Basic link so this. Will deep copy and reallocate to grow
             m->weights = calloc(1,  1 * sizeof(MUS_NODE**));
+            pl->entrypoints[0] = m;
+            
         } else if(i==numfiles){
 
         } else{
@@ -144,19 +156,78 @@ PLAYLIST* readm3u(){
     return pl;
 }
 
+MUS_NODE* selectEntryNode(int height, int width){
+    printf( "\e[2J" );
+    printf( "OPTIONS:\n");
+    for(int i=0;i<pl.entrypointcount;i++){
+        printf("[%i]:%s\n",i,pl.entrypoints[i]->filename);
+    }
+    for(int j=pl.entrypointcount;j<height-1;j++){
+        putchar('\n');
+    }
+    int in;
+
+    scanf("%5i", &in);
+    while(in>(pl.entrypointcount -1) || in < 0){
+        printf("SELECTION OUT OF RANGE. TRY AGAIN.\n");
+        for(int i=0;i<pl.entrypointcount;i++){
+            printf("[%i]:%s\n",i,pl.entrypoints[i]->filename);
+        }
+        for(int j=pl.entrypointcount;j<height-2;j++){
+            putchar('\n');
+        }   
+        scanf("%5i", &in);
+    }
+    printf("%i\n", in);
+    return pl.entrypoints[in];
+}
+
+void traverseWeb(){
+    /*display current song
+    * display links and weights
+    * Take input for next
+    * OPTIONS: 
+    * Enter at entrypoint
+    * Enter at specific song (enumerate or type name)
+    * 
+    */
+    struct winsize ws;
+    ioctl( 0, TIOCGWINSZ, &ws );
+    int width = ws.ws_col;
+    int height = ws.ws_row;
+    //printf("\e[0;32m"); //colour code green ANSI (https://gist.github.com/RabaDabaDoba/145049536f815903c79944599c6f952a)
+    printf( "\e[2J" ); //clear term
+    for(int i=0;i<width;i++){
+        putchar('=');
+    } putchar('\n');
+    printf("\nSelect Marking Start Node:\n[0]: %s\n[1]: Select from EntryNodes\n[2]: Enter exact file string (plus terminator)\n", pl.nodes[0]->filename);
+    //6
+    for(int i=0;i<height-7;i++){
+        putchar('\n');
+    }
+    //printf("term width: %i chars\nterm height: %i chars\n", width, height);
+
+    MUS_NODE* currnode;
+
+    char in[40];
+    scanf("%39s", in);
+    switch(in[0]){
+        case '0': currnode = pl.nodes[0];
+        break;
+        case '1': currnode = selectEntryNode(height, width);
+    }
+    //printf("%s\n", in);
+
+
+}
+
 int main(int argc, char *argv[]) {
     if (load_opts(argc, argv)){
         return -1; //incorrect kwargs
     }
     //printf("input: %s, output:%s, visualise:%i\n",INPUT_FILE ,OUTPUT_FILE, VISUALISE_MODE);
     printf("sizeof(MUS_NODE): %lu\n", sizeof(MUS_NODE));
-    PLAYLIST * pl = readm3u();
+    pl = *readm3u();
     //printf("sizeof(pl->nodes):%lu\n", pl->nodecount);
-    for(int i=0;i<pl->nodecount;i++){
-        if(i<pl->nodecount-1){
-            printf("FILE %i: %s\nLink:%s\n", i, pl->nodes[i]->filename, pl->nodes[i]->links[0]->filename);
-        } else{
-            printf("FILE %i: %s\n", i, pl->nodes[i]->filename);
-        }
-    }
+    traverseWeb();
 }
