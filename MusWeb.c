@@ -24,6 +24,7 @@
 * Detect nonexistent songs 
 * Support for skipping
 * Hashmap on song names for quick lookup for playlist merging (will never do lol)
+* Better practice with types 
 */
 
 //CONSTANTS
@@ -126,7 +127,7 @@ PLAYLIST* readm3u(){
 
     for(int i=0;i<numfiles;i++){
         MUS_NODE* m = malloc(sizeof(MUS_NODE));
-
+        //probably could be more compact as a case switch..
         if(i==0){
             m->links = calloc(1,  1 * sizeof(MUS_NODE**)); //allocating size here. 1 represents number of links this node has to others. Basic link so this. Will deep copy and reallocate to grow
             m->numlinks = 1;
@@ -141,8 +142,6 @@ PLAYLIST* readm3u(){
             m->weights = calloc(1,  1 * sizeof(MUS_NODE**));
             lastnode->links[0] = m;
             lastnode->weights[0] = 1.0f;
-            //m->links[0] = lastnode;
-            //m->weights[0] = 1.0f;
         }
         m->filename = malloc((numchars[i]-1) * sizeof(char));
         char temp[numchars[i]];
@@ -185,16 +184,12 @@ MUS_NODE* selectEntryNode(int height, int width){
     return pl.entrypoints[in];
 }
 
-int FILE_EXISTS(char * filename){
+int FILE_EXISTS(char * filename){ //should check a specified music directory
     return access(filename, F_OK) == 0;
 }
 
-int createAndAppendNode(MUS_NODE * parent, char * filename, float parentweight)
-{
+void createAndAppendNode(MUS_NODE * parent, char * filename, float parentweight){
     //assumes playlist exists
-    MUS_NODE * m = malloc(sizeof(MUS_NODE));
-    m->filename = filename;
-    m->numlinks = 0;
 
     //add weight to parent
     float * tempweights = parent->weights;
@@ -204,6 +199,24 @@ int createAndAppendNode(MUS_NODE * parent, char * filename, float parentweight)
     }
     parent->weights[parent->numlinks] = parentweight;
     free(tempweights);
+
+    int nodeExists = 0;
+    MUS_NODE * m;
+
+    //FIRST: Check if music file already in pl :)
+    for(int i=pl.nodecount;i>0;i--){
+        if(!strcmp(pl.nodes[i-1]->filename, filename)){
+            nodeExists = i;
+            break;
+        }
+    }
+    if(nodeExists){
+        m = pl.nodes[nodeExists-1];
+    } else {
+        m = malloc(sizeof(MUS_NODE));
+        m->filename = filename;
+        m->numlinks = 0;
+    }
 
     //add node pointer to parent
     MUS_NODE ** templinks = parent->links;
@@ -272,11 +285,11 @@ void traverseWeb(){
 
     //now we have currnode
     while (strcmp(in, "X")){
-        printf("CURRENT NODE: %s\nX:exit\na:add child\ne:edit children\n\n[SELECT #]:Song(Relative Weight)\n", currnode->filename);
+        printf("CURRENT NODE: %s\nX:exit\na:add child\ne:edit children\nm:mark as entrypoint\n\n[SELECT #]:Song(Relative Weight)\n", currnode->filename);
         for(int i=0;i<currnode->numlinks;i++){
             printf("[%i]:%s(%f)\n",i, currnode->links[i]->filename, currnode->weights[i]);
         }
-        for(int j=currnode->numlinks;j<height-6;j++){
+        for(int j=currnode->numlinks;j<height-8;j++){
             putchar('\n');
         }
         scanf("%39s", in);
@@ -299,21 +312,20 @@ void traverseWeb(){
                 char temp[40];
                 double toweight;
                 
-                while(!FILE_EXISTS(toadd)){
+                do{
                 fgets(toadd, 39, stdin);
                 
                 if ((strlen(toadd) > 0) && (toadd[strlen (toadd) - 1] == '\n'))
                 toadd[strlen (toadd) - 1] = '\0';
 
                 if(FILE_EXISTS(toadd)){
-                    printf("FILE EXISTS!!!!!1\n");
+                    //printf("FILE EXISTS!!!!!1\n");
                     printf("enter desired relative weight:\n");
                     scanf("%39s", temp);
                     toweight = atof(temp);
                     createAndAppendNode(currnode, toadd, toweight);
-                    printf("toadd:%s", toadd);
                     }
-                }
+                } while(!FILE_EXISTS(toadd));
             }
 
             }
