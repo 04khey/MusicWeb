@@ -14,3 +14,6 @@
 *.m3u
 *.mp3
 *.flac
+
+#ignore VSCode stuff
+.vscode/*
