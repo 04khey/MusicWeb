@@ -58,7 +58,7 @@ int VISUALISE_MODE = 0;
 char INPUT_FILE[NAMEBUFFERSIZE];
 char OUTPUT_FILE[NAMEBUFFERSIZE];
 
-static struct option const long_options[] = //see https://linux.die.net/man/3/getopt_long
+static struct option const long_options[] = //see https://linux.die.net/man/3/getopt_long //this is a struct option
   { //char *name, int has_arg, int *flag (pointer to load val into if flag true), int val  
     {"visualise", 0, &VISUALISE_MODE, 1},
     {NULL, 0, NULL, 0} //required convention. Acts as a terminator struct for the thing reading long_options.
@@ -79,7 +79,7 @@ int load_opts(int argc, char* argv[]){
         
     }
     if(INPUT_FILE[0] == '\0' || OUTPUT_FILE[0] == '\0'){ //probably a standard way to do this with lib. Also -i test -o --visualise gives bad behaviour.
-         fprintf (stderr, "Incorrect arguments. See man page.\n");
+         fprintf (stderr, "Incorrect arguments. Usage: MusWeb -i infile.m3u -o outfile.\n");
          return -1;
     }
     return 0;
@@ -129,15 +129,15 @@ PLAYLIST* readm3u(){
         MUS_NODE* m = malloc(sizeof(MUS_NODE));
         //probably could be more compact as a case switch..
         if(i==0){
-            m->links = calloc(1,  1 * sizeof(MUS_NODE**)); //allocating size here. 1 represents number of links this node has to others. Basic link so this. Will deep copy and reallocate to grow
+            m->links = calloc(1,  1 * sizeof(MUS_NODE**)); //allocating size here. 1 represents number of links this node has to others. Basic link so this. Will copy and reallocate to grow
             m->numlinks = 1;
             m->weights = calloc(1,  1 * sizeof(MUS_NODE**));
             pl->entrypoints[0] = m;
             
-        } else if(i==numfiles){
+        } else if(i==numfiles){ //why is this here?
 
         } else{
-            m->links = calloc(1,  1 * sizeof(MUS_NODE**)); //allocating size here. 1 represents number of links this node has to others. Basic link so this. Will deep copy and reallocate to grow
+            m->links = calloc(1,  1 * sizeof(MUS_NODE**)); //allocating size here. 1 represents number of links this node has to others. Basic link so this. Will copy and reallocate to grow
             m->numlinks = 1;
             m->weights = calloc(1,  1 * sizeof(MUS_NODE**));
             lastnode->links[0] = m;
@@ -280,7 +280,7 @@ void traverseWeb(){
     }
 
     //we will use this later. Moved here to fix stack-use-after-scope.
-    char toadd[40]; //should really be NAMEBUFFERSIZE
+    char toadd[NAMEBUFFERSIZE]; //should really be NAMEBUFFERSIZE
     strcpy(toadd, "e");
 
     //now we have currnode
@@ -292,8 +292,17 @@ void traverseWeb(){
         for(int j=currnode->numlinks;j<height-8;j++){
             putchar('\n');
         }
-        scanf("%39s", in);
-        int c = atoi(in);
+        char thing[10];
+        char namebufsizeasstring[10];
+        sprintf(namebufsizeasstring, "%d", NAMEBUFFERSIZE);
+
+        strcpy(thing, "%"); //e.g. %40s
+    
+        strcat(thing, namebufsizeasstring);
+        strcat(thing, "s");
+
+        scanf(thing, in);
+        int c = atoi(in); //atoi is unsafe
         if(c || !strcmp(in, "0")){
             currnode = currnode->links[c];
         } else{
@@ -313,7 +322,7 @@ void traverseWeb(){
                 double toweight;
                 
                 do{
-                fgets(toadd, 39, stdin);
+                fgets(toadd, NAMEBUFFERSIZE - 1, stdin);
                 
                 if ((strlen(toadd) > 0) && (toadd[strlen (toadd) - 1] == '\n'))
                 toadd[strlen (toadd) - 1] = '\0';
