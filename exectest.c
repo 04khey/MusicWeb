@@ -75,6 +75,7 @@ int main(int argc, char** argv){
 
     /*
     CMUS LAUNCH COMMANDS BASED ON TERMINAL:
+    (use screen here rather than coproc? see https://github.com/ichier/cmus_daemon/blob/master/cmusd)
     */
     const char* TermPIDNames[] = {"st\n", "xfce4-terminal\n", "electron\n", "gnome-terminal-\n"};
     const char* execcommands[4];
@@ -86,7 +87,6 @@ int main(int argc, char** argv){
     int matchFlag =-1;
     int commandIndex;
     for(commandIndex=0;matchFlag!=0 && commandIndex<(sizeof(execcommands)/sizeof(execcommands)[0]);commandIndex++ ){
-        //printf("excom:%d", sizeof(execcommands)/sizeof(execcommands)[0]);
         printf("comparing %s to %s", TermPIDNames[commandIndex], TermName);
         matchFlag = strcmp(TermPIDNames[commandIndex], TermName);
         printf("matchflag:%d\ni:%d\n", matchFlag, commandIndex);
