@@ -26,7 +26,6 @@ void getParentOfPID(char* stringToWriteTo, int PID){ //returns string since we'l
     FILE* fp = popen(getParentString, "r");
 
     char temp[100];
-    //char result[40];
 
     const char start[] = "PPid:";
     //FILE* fp = fopen("/proc/${1:-$PPID}/comm", "r");
@@ -59,13 +58,7 @@ void getNameOfPID(char* stringToWriteTo, char* PID){
     fgets(PIDName, sizeof(PIDName), fp);
     fclose(fp);
 
-    //printf("PID NAME: %s\n", PIDName);
-
     strcpy(stringToWriteTo, PIDName);
-
-
-    //char PIDasString[10];
-    //sprintf(PIDasString, "%d")
 
 }
 
@@ -77,9 +70,40 @@ int main(int argc, char** argv){
 
     int PPID = getppid();
     getParentOfPID(parent, PPID);
-    //printf("parent: %s\n", parent);
     getNameOfPID(TermName, parent);
     printf("You ran this from: %s", TermName);
+
+    /*
+    CMUS LAUNCH COMMANDS BASED ON TERMINAL:
+    */
+    const char* TermPIDNames[] = {"st\n", "xfce4-terminal\n", "electron\n", "gnome-terminal-\n"};
+    const char* execcommands[4];
+    execcommands[0] = "coproc st -- sh -c \"cmus\";sleep 0.5; cmus-remote -q song1.mp3; cmus-remote -p";
+    execcommands[1] = "coproc xfce4-terminal -x cmus;sleep 0.5; cmus-remote -q song1.mp3; cmus-remote -p";
+    execcommands[2] = "coproc st -- sh -c \"cmus\";sleep 0.5; cmus-remote -q song1.mp3; cmus-remote -p"; //placeholder
+    execcommands[3] = "coproc gnome-terminal --command cmus;sleep 0.5; cmus-remote -q song1.mp3; cmus-remote -p"; //needs testing
+
+    int matchFlag =-1;
+    int commandIndex;
+    for(commandIndex=0;matchFlag!=0 && commandIndex<(sizeof(execcommands)/sizeof(execcommands)[0]);commandIndex++ ){
+        //printf("excom:%d", sizeof(execcommands)/sizeof(execcommands)[0]);
+        printf("comparing %s to %s", TermPIDNames[commandIndex], TermName);
+        matchFlag = strcmp(TermPIDNames[commandIndex], TermName);
+        printf("matchflag:%d\ni:%d\n", matchFlag, commandIndex);
+    }
+    commandIndex--;
+    printf("escape, i=%d\n", commandIndex);
+    if(matchFlag!=0){
+        //unknown term
+        printf("unknown terminal, giving up\n");
+        //or just exec from 
+
+    } else {
+        printf("executing %s:\n", execcommands[commandIndex]);
+        //yes, this is very bad. Evil user could overwrite /proc/PID/status for ACE.  
+        system(execcommands[commandIndex]);
+    }
+
 
     //system("coproc st -- sh -c \"cmus\";sleep 0.5; cmus-remote -q song1.mp3; cmus-remote -p"); //must be a better way to do this. We can't tell what term they're using, can we? (copy what neofetch does?)
 
