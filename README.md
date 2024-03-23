@@ -24,17 +24,22 @@ cmus<br>
 cmus-remote
 
 # Feature checklist
-* Lazy track selection (buffer) via cmus feedback               ☐
-* read from STDIN                                               ☐
-* playlist viewer (CLI)                                         ☐
-* Add node to existing playlist                                 ☐
-* Unicode support?                                              ✓
+* Lazy track selection (buffer) via cmus feedback                   ☐
+* read from STDIN                                                   ☐
+* playlist viewer (CLI)                                             ☐
+* Add node to existing playlist                                     ☐
+* Unicode support?                                                  ✓
 * Interface with cmus:                                          
-* Detect nonexistent songs                                      ☐
+* Detect nonexistent songs                                          ☐
     - Support for skipping                                          ☐
     - Hashmap on song names for quick lookup for playlist merging   ☐
-* Better practice with types                                    ☐
-* Windows support via cygwin bundling                           ☐
+* Better practice with types                                        ☐
+* Windows support via cygwin bundling                               ☐
 
 # TODO
 rewrite using ncurses
+
+# Others' Suggestions
+* Spotify integration for wrapped boasting
+* Capacity to stream songs (would need some library indexing method)
+* GUI
