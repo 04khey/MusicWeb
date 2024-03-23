@@ -6,11 +6,7 @@
 #include <string.h>
 
 
-
-
-
-
-void getParentOfPID(char* stringToWriteTo, int PID){ //returns string since we'll be passing back in as a string most likely.
+void getParentOfPID(char* stringToWriteTo, int PID){ 
 
    printf("Getting parent of PID %d\n", PID);
    char PIDAsString[40];
@@ -28,15 +24,12 @@ void getParentOfPID(char* stringToWriteTo, int PID){ //returns string since we'l
     char temp[100];
 
     const char start[] = "PPid:";
-    //FILE* fp = fopen("/proc/${1:-$PPID}/comm", "r");
     while (fgets(temp, sizeof(temp), fp)){ 
         if(!strncmp(start, temp, 4) ){
             char* token = strtok(temp, "\t");
             strcpy(stringToWriteTo, strtok(NULL, ""));
             //strcpy(stringToWriteTo, strtok(stringToWriteTo, "\n"));
             strtok(stringToWriteTo, "\n");
-
-            //printf("%s", stringToWriteTo);
         }
         
     }
@@ -47,19 +40,18 @@ void getNameOfPID(char* stringToWriteTo, char* PID){
 
     printf("Finding name of PID %s\n", PID);
 
+    //assemble path to process info file
     char getNameCommand[40];
-    char PIDName[40];
-
     strcpy(getNameCommand, "/proc/");
     strcat(getNameCommand, PID);
     strcat(getNameCommand, "/comm");
 
+    char PIDName[40];
     FILE* fp = fopen(getNameCommand, "r");
     fgets(PIDName, sizeof(PIDName), fp);
     fclose(fp);
 
     strcpy(stringToWriteTo, PIDName);
-
 }
 
 
@@ -96,18 +88,13 @@ int main(int argc, char** argv){
     if(matchFlag!=0){
         //unknown term
         printf("unknown terminal, giving up\n");
-        //or just exec from 
+        //could assume whatever's in /proc/comm is a runnable terminal and do a best guess -- (command), but probs won't work and eve can overwrite for ACE.
 
     } else {
         printf("executing %s:\n", execcommands[commandIndex]);
-        //yes, this is very bad. Evil user could overwrite /proc/PID/status for ACE.  
+        //not directly executing user input, so this isn't THAT bad :). Then again, if they can do a buffer overrun into the text segment...
         system(execcommands[commandIndex]);
     }
 
-
-    //system("coproc st -- sh -c \"cmus\";sleep 0.5; cmus-remote -q song1.mp3; cmus-remote -p"); //must be a better way to do this. We can't tell what term they're using, can we? (copy what neofetch does?)
-
-
-
-    return 0; //get output from echo $(< "/proc/${1:-$PPID}/comm")
+    return 0; 
 }
