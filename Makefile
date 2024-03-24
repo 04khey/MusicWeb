@@ -1,2 +1,2 @@
 default:
-	gcc ncursetest2.c -lncurses -o ncurse
+	gcc ncursetest3.c -lncurses -o ncurse

@@ -21,7 +21,8 @@ Was paused since I realised the CLI needed to be rewritten using NCurses.
 # Dependencies:
 
 cmus<br>
-cmus-remote
+cmus-remote<br>
+screen
 
 # Feature checklist
 * Lazy track selection (buffer) via cmus feedback                   ☐
