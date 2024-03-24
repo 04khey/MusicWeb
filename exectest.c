@@ -40,7 +40,7 @@ void getNameOfPID(char* stringToWriteTo, char* PID){
 
     printf("Finding name of PID %s\n", PID);
 
-    //assemble path to process info file
+    //assemble path to (process info) file
     char getNameCommand[40];
     strcpy(getNameCommand, "/proc/");
     strcat(getNameCommand, PID);
