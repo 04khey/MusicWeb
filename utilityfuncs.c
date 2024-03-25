@@ -23,8 +23,7 @@ typedef struct LIBRARY{
 } LIBRARY;
 
 //function headers
-MUS_NODE* musNodeFromURI(char* dir, char* fileName);
-
+MUS_NODE* musNodeFromURI(char* dir, char* fileName, int FileID);
 
 
 
@@ -35,7 +34,6 @@ LIBRARY* getSongsFromDir(char* dirString){
         fprintf(stderr, "Regex Compilation failure\n");
         exit(1);
     }
-
 
     char command[261];
     strcpy(command, "ls ");
@@ -59,15 +57,13 @@ LIBRARY* getSongsFromDir(char* dirString){
     }
     printf("%d Audio files found.\n", numFilesInDir);
 
+    //fseek(pp, 0, SEEK_SET); doesn't seem to work for popen();.
+    pclose(pp);
+    FILE* pp2 = popen(command, "r");
 
     LIBRARY* outLibrary = malloc(sizeof(LIBRARY));
     outLibrary->NumNodes = numFilesInDir;
     outLibrary->Songs = malloc(numFilesInDir * sizeof(MUS_NODE));
-
-
-    //fseek(pp, 0, SEEK_SET); doesn't seem to work for popen();.
-    pclose(pp);
-    FILE* pp2 = popen(command, "r");
 
 
     int currentNode = 0;
@@ -76,7 +72,7 @@ LIBRARY* getSongsFromDir(char* dirString){
         doneFlag = (fgets(fileNameBuffer, sizeof(fileNameBuffer)/sizeof(fileNameBuffer[0]), pp2) == NULL);
         int reti = regexec(&regex, fileNameBuffer, 0, NULL, 0);
         if (!reti) {
-            outLibrary->Songs[currentNode] = musNodeFromURI(dirString, fileNameBuffer);
+            outLibrary->Songs[currentNode] = musNodeFromURI(dirString, fileNameBuffer, currentNode);
             currentNode++;
         }
     }
@@ -85,11 +81,25 @@ LIBRARY* getSongsFromDir(char* dirString){
     return outLibrary;
 }
 
-MUS_NODE* musNodeFromURI(char* dir, char* fileName){ //TODO
+MUS_NODE* musNodeFromURI(char* dir, char* fileName, int FileID){ //TODO
     char URI[512];
     strcpy(URI, dir);
     strcat(URI, fileName);
-    printf("adding %s", URI);
+
+    MUS_NODE* outNode = malloc(sizeof(MUS_NODE));
+    outNode->NumLinks = 0;
+    outNode->FileID = FileID;
+    //don't need to initialise Links** since we'll do this later when we see numlinks=0
+    //same for weights.
+    outNode->NiceName = malloc((strlen(fileName))*sizeof(char));
+    fileName[strlen(fileName)-1]='\0'; //trim \n
+    strcpy(outNode->NiceName, fileName);
+    //printf("copied %s", outNode->NiceName);
+    outNode->FullURI = malloc((strlen(URI))*sizeof(char));
+    URI[strlen(URI)-1]='\0'; //trim \n
+    strcpy(outNode->FullURI, URI);
+    //printf("copied %s", outNode->FullURI);
+    return outNode;
 }
 
 
