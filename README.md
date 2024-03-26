@@ -21,19 +21,15 @@ Was paused since I realised the CLI needed to be rewritten using NCurses.
 # Dependencies:
 
 cmus<br>
-cmus-remote<br>
 screen
 
 # Feature checklist
+* Basic functionality                                               ☐
 * Lazy track selection (buffer) via cmus feedback                   ☐
 * read from STDIN                                                   ☐
 * playlist viewer (CLI)                                             ☐
 * Add node to existing playlist                                     ☐
 * Unicode support?                                                  ✓
-* Interface with cmus:                                          
-* Detect nonexistent songs                                          ☐
-    - Support for skipping                                          ☐
-    - Hashmap on song names for quick lookup for playlist merging   ☐
 * Better practice with types                                        ☐
 * Windows support via cygwin bundling                               ☐
 
