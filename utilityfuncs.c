@@ -25,7 +25,13 @@ typedef struct LIBRARY{
 //function headers
 MUS_NODE* musNodeFromURI(char* dir, char* fileName, int FileID);
 
+LIBRARY* getSongsFromm3u(char* pathTom3u){
+    FILE* fp = fopen(pathTom3u, "r");
+    
+    
 
+    fclose(fp);
+}
 
 LIBRARY* getSongsFromDir(char* dirString){
 
@@ -81,6 +87,17 @@ LIBRARY* getSongsFromDir(char* dirString){
     return outLibrary;
 }
 
+void printLibrary(LIBRARY* library){
+    printf("Songs in Library: %d\n", library->NumNodes);
+    MUS_NODE* temp;
+    for(int i=0;i<library->NumNodes;i++){
+        temp = library->Songs[i];
+        printf("---\nNode %d: %s\n", temp->FileID, temp->NiceName);
+        printf("Num Links: %d\n", temp->NumLinks);
+        printf("URI: %s\n", temp->FullURI);
+    }
+}
+
 MUS_NODE* musNodeFromURI(char* dir, char* fileName, int FileID){ //TODO
     char URI[512];
     strcpy(URI, dir);
@@ -104,5 +121,6 @@ MUS_NODE* musNodeFromURI(char* dir, char* fileName, int FileID){ //TODO
 
 
 int main(int argc, char* argv[]){
-    getSongsFromDir("/mnt/c/Users/Dmitry/Downloads/");
+    LIBRARY l = *getSongsFromDir("/mnt/c/Users/Dmitry/Downloads/");
+    printLibrary(&l);
 }
