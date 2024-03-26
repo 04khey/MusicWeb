@@ -8,6 +8,11 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 
+//header file test
+#include "utilityfuncs.h"
+typedef struct LIBRARY LIBRARY;
+typedef struct MUS_NODE MUS_NODE;
+
 /*
     Results of the exectest were: 
     to run in any term: screen -d -m cmus;sleep 0.5;cmus-remote -q song1.mp3; cmus-remote -p
@@ -24,6 +29,7 @@ char* sickASCII[] = {
 
 void writesickASCII(WINDOW *win);
 void listOptions(WINDOW *win);
+void playlistFromDir();
 
 //globally useful
 int WIDTH;
@@ -66,11 +72,29 @@ int main(int argc, char *argv[])
     WINDOW *bigWin = newwin(HEIGHT-7,WIDTH,7,0);
 
     refresh();
-    //char c = getch();
     
     listOptions(bigWin);
     writesickASCII(titleWin);
-
+    char selection = 'z';
+    while(selection != 'x'){
+        selection = getch();
+        switch (selection)
+        {
+        case '2':
+            mvwprintw(stdscr,HEIGHT-1,0, "do thing now            ");
+            playlistFromDir();
+            wrefresh(bigWin);
+            getch();
+            selection = 'x';
+            break;
+        
+        default:
+            mvwprintw(stdscr,HEIGHT-1,0, "Err: %c not recognised     ", selection);
+            wrefresh(bigWin);
+            break;
+        }
+        
+    }
 
     delwin(titleWin);
     endwin();
@@ -83,8 +107,8 @@ void writesickASCII(WINDOW *win){
     curs_set(0); //hide cursor. 0=hide,1=block,2=flashing block
     int tempx;
     int tempy;
-    getmaxyx(win, tempy, tempx);
-    wprintw(win, "max x, y: %d %d", tempx, tempy);
+    //getmaxyx(win, tempy, tempx);
+    //wprintw(win, "max x, y: %d %d", tempx, tempy);
 
     int offset = (WIDTH/2) - (strlen(sickASCII[0]))/2 -2;
 
@@ -94,7 +118,6 @@ void writesickASCII(WINDOW *win){
 
 
     wrefresh(win);
-    getch();
     //curs_set(1); //probably don't want this
 }
 
@@ -104,7 +127,8 @@ char* menuOptions[] = {
 "[2]:Create playlist from directory",
 "[3]:Play playlist",
 "[4]:Visualise playlist",
-"[5] Playlist to m3u"
+"[5] Playlist to m3u",
+"[x] Exit"
 };
 
 void listOptions(WINDOW *win){
@@ -117,4 +141,26 @@ void listOptions(WINDOW *win){
 
     wrefresh(win);
 
+}
+
+MUS_NODE* getUserEntryNode(LIBRARY lib){
+    clear();
+    WINDOW* searchResults = newwin(HEIGHT-1,WIDTH,0,0); //int nlines, int ncols, int begin_y, int begin_x
+    WINDOW* searchBar = newwin(1,WIDTH,HEIGHT-1,0);
+
+}
+
+void playlistFromDir(){
+    clear();
+    mvprintw(0,0, "enter music directory\n");
+    echo();
+    refresh();
+    char dirBuffer[255];
+    getstr(dirBuffer);
+    mvprintw(2,0,"%s", dirBuffer);
+    refresh();
+    noecho();
+
+    //getUserEntryNode();
+    //INDOW *searchBar = newwin(HEIGHT-7,WIDTH,7,0);
 }

@@ -4,26 +4,13 @@
 #include <sys/ioctl.h>
 #include <regex.h>   //for identifying music files
 
+
+#include "utilityfuncs.h"
+
 char* AUDIO_FILE_MATCH_STRING = ".mp3"; //TODO: replace with real regex
 
-typedef struct MUS_NODE {
-    int NumLinks;
-    struct MUS_NODE** Links;
-    float* Weights;
-    char* NiceName;
-    char* FullURI;
-    int FileID; //for serialisation
-    
-
-} MUS_NODE;
-
-typedef struct LIBRARY{
-    int NumNodes;
-    struct MUS_NODE** Songs;
-} LIBRARY;
-
-//function headers
-MUS_NODE* musNodeFromURI(char* dir, char* fileName, int FileID);
+typedef struct LIBRARY LIBRARY;
+typedef struct MUS_NODE MUS_NODE;
 
 LIBRARY* getSongsFromm3u(char* pathTom3u){
     FILE* fp = fopen(pathTom3u, "r");
