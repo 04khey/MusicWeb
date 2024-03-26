@@ -19,7 +19,9 @@ This structure allows for particularly complex playlist/DJ structures to be crea
 Was paused since I realised the CLI needed to be rewritten using NCurses.
 
 # Dependencies:
-Build: libncurses-dev
+## Build: 
+libncurses-dev<br>
+## Run:
 cmus<br>
 screen
 
