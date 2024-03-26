@@ -143,7 +143,7 @@ void listOptions(WINDOW *win){
 
 }
 
-MUS_NODE* getUserEntryNode(LIBRARY lib){
+MUS_NODE* getUserEntryNode(LIBRARY* lib){
     clear();
     WINDOW* searchResults = newwin(HEIGHT-1,WIDTH,0,0); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* searchBar = newwin(1,WIDTH,HEIGHT-1,0);
@@ -157,10 +157,21 @@ void playlistFromDir(){
     refresh();
     char dirBuffer[255];
     getstr(dirBuffer);
-    mvprintw(2,0,"%s", dirBuffer);
-    refresh();
+    //mvprintw(2,0,"%s", dirBuffer);
+    //refresh();
     noecho();
+    LIBRARY* dirlib = getSongsFromDir(dirBuffer);
+    
+    printw("Songs in Library: %d\n", dirlib->NumNodes);
+    MUS_NODE* temp;
+    for(int i=0;i<dirlib->NumNodes;i++){
+        temp = dirlib->Songs[i];
+        printw("---\nNode %d: %s\n", temp->FileID, temp->NiceName);
+        printw("Num Links: %d\n", temp->NumLinks);
+        printw("URI: %s\n", temp->FullURI);
+    }
+    getch();
 
     //getUserEntryNode();
-    //INDOW *searchBar = newwin(HEIGHT-7,WIDTH,7,0);
+    //WINDOW *searchBar = newwin(HEIGHT-7,WIDTH,7,0);
 }

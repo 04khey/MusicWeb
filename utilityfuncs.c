@@ -43,12 +43,12 @@ LIBRARY* getSongsFromDir(char* dirString){
 
         int reti = regexec(&regex, fileNameBuffer, 0, NULL, 0);
         if (!reti) {
-            printf("%s", fileNameBuffer);
+            //printf("%s", fileNameBuffer);
             numFilesInDir++;
         }
 
     }
-    printf("%d Audio files found.\n", numFilesInDir);
+    //printf("%d Audio files found.\n", numFilesInDir);
 
     //fseek(pp, 0, SEEK_SET); doesn't seem to work for popen();.
     pclose(pp);
@@ -85,6 +85,7 @@ void printLibrary(LIBRARY* library){
     }
 }
 
+
 MUS_NODE* musNodeFromURI(char* dir, char* fileName, int FileID){ //TODO
     char URI[512];
     strcpy(URI, dir);
@@ -106,8 +107,9 @@ MUS_NODE* musNodeFromURI(char* dir, char* fileName, int FileID){ //TODO
     return outNode;
 }
 
+/*
 
 int main(int argc, char* argv[]){
     LIBRARY l = *getSongsFromDir("/mnt/c/Users/Dmitry/Downloads/");
     printLibrary(&l);
-}
+}*/
