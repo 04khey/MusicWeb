@@ -150,7 +150,7 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
     start_color();
     init_pair(1, COLOR_WHITE, COLOR_GREEN);
     
-    mvwprintw(stdscr, 0,0,"SELECT START NODE");
+    mvwprintw(stdscr, 0,0,"SELECT START NODE (up/down to move highlight, enter to select)");
     wrefresh(stdscr);
     WINDOW* searchResults = newwin(HEIGHT-1,WIDTH,1,0); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* searchBar = newwin(1,WIDTH,HEIGHT-1,0);
