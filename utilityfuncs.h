@@ -29,7 +29,7 @@ struct PLAYLIST{
     int NumNodesInPlaylist;
 };
 
-
+struct LIBRARY* searchLibrary(struct LIBRARY* libToSearch, char* searchString);
 struct MUS_NODE* musNodeFromURI(char* dir, char* fileName, int FileID);
 struct LIBRARY* getSongsFromm3u(char* pathTom3u);
 struct LIBRARY* getSongsFromDir(char* dirString);

@@ -163,6 +163,8 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
 
     keypad(searchBar, TRUE);
 
+    LIBRARY* results;
+
     while(!selected){ //chars 32-126 inclusive allowed
         mvwprintw(searchBar, 0, 0, "Search: %s          %d", searchBuffer, input);
         wrefresh(searchBar);
@@ -175,7 +177,6 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
             break;
         
         default:
-        
         if(input>31 && input < 127){
             inAsChar = (char) input;
             mvwprintw(searchResults, 0, 0, "HIT!: %d          ", input);
@@ -185,6 +186,13 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
         }
         break;
         }
+        wclear(searchResults);
+        
+        results = searchLibrary(lib, searchBuffer);
+        for(int i=0;i<results->NumNodes;i++){
+            mvwprintw(searchResults,i,0, "%s",results->Songs[i]->NiceName);
+        }
+        wrefresh(searchResults);
     }
     
 

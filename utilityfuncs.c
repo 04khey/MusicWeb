@@ -20,6 +20,29 @@ LIBRARY* getSongsFromm3u(char* pathTom3u){
     fclose(fp);
 }
 
+int nameMatch(char* toCheck, char* pattern){
+    return (strstr(toCheck, pattern) != NULL); //checks if substring
+}
+
+//return a trimmed library
+LIBRARY* searchLibrary(LIBRARY* libToSearch, char* searchString){
+    if(libToSearch->NumNodes ==0){
+        return libToSearch;
+    }
+    //nonzero songs.
+    LIBRARY* outLib = malloc(sizeof(LIBRARY));
+    outLib->NumNodes=0;
+    outLib->Songs = malloc(libToSearch->NumNodes * sizeof(MUS_NODE*) );
+    for(int i=0;i<libToSearch->NumNodes;i++){
+        if(nameMatch(libToSearch->Songs[i]->NiceName, searchString)){
+            outLib->Songs[outLib->NumNodes] = libToSearch->Songs[i];
+            outLib->NumNodes++;
+            //tag for later freeing?
+        }
+    }
+    return outLib;
+}
+
 LIBRARY* getSongsFromDir(char* dirString){
 
     regex_t regex;
