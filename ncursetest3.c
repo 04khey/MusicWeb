@@ -36,7 +36,6 @@ void playlistFromDir();
 int WIDTH;
 int HEIGHT;
 
-
 //https://tldp.org/HOWTO/NCURSES-Programming-HOWTO/windows.html lol
 int main(int argc, char *argv[]) 
 {
@@ -50,7 +49,7 @@ int main(int argc, char *argv[])
     intrflush(stdscr, FALSE);
     keypad(stdscr, TRUE); //don't echo arrow keys
     refresh(); //not sure why this is needed but it is
-
+    
     //variables for later
     WINDOW *titleWin; 
     WIDTH = COLS;//just use COLS
@@ -145,9 +144,17 @@ void listOptions(WINDOW *win){
 }
 
 MUS_NODE* getUserEntryNode(LIBRARY* lib){
-    clear();
-    WINDOW* searchResults = newwin(HEIGHT-1,WIDTH,0,0); //int nlines, int ncols, int begin_y, int begin_x
+    wclear(stdscr);//doesn't work?
+
+    //colours test
+    start_color();
+    init_pair(1, COLOR_WHITE, COLOR_GREEN);
+    
+    mvwprintw(stdscr, 0,0,"SELECT START NODE");
+    wrefresh(stdscr);
+    WINDOW* searchResults = newwin(HEIGHT-1,WIDTH,1,0); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* searchBar = newwin(1,WIDTH,HEIGHT-1,0);
+    
     int termHeight;
     int termWidth;
     getmaxyx(searchResults, termHeight, termWidth);
@@ -157,6 +164,7 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
 
 
     int selected = 0;
+    int highlightLine =0;
     int input = 'x';
     char inAsChar;
     noecho();
@@ -164,8 +172,15 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
     keypad(searchBar, TRUE);
 
     LIBRARY* results;
+    //results->NumNodes=0;
+
+    results = searchLibrary(lib, searchBuffer);
+
 
     while(!selected){ //chars 32-126 inclusive allowed
+
+        
+
         mvwprintw(searchBar, 0, 0, "Search: %s          %d", searchBuffer, input);
         wrefresh(searchBar);
         input = wgetch(searchBar);
@@ -174,8 +189,21 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
         case KEY_BACKSPACE:
             mvwprintw(searchResults, 0, 0, "HIT!: %s          ", searchBuffer);
             searchBuffer[strlen(searchBuffer)-1]='\0';
-            break;
-        
+        break;
+        case KEY_UP:
+        if(highlightLine==0){
+
+        } else {
+            highlightLine--;
+        }
+        break;
+        case KEY_DOWN:
+        if(highlightLine==results->NumNodes-1){
+
+        } else {
+            highlightLine++;
+        }
+        break;
         default:
         if(input>31 && input < 127){
             inAsChar = (char) input;
@@ -187,10 +215,23 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
         break;
         }
         wclear(searchResults);
+
         
         results = searchLibrary(lib, searchBuffer);
+
+        if(results->NumNodes<=highlightLine){
+            highlightLine=0;
+        }
+
         for(int i=0;i<results->NumNodes;i++){
+            if(i==highlightLine){
+                wattron(searchResults,COLOR_PAIR(1));
+                attron(A_BLINK);
+            }
             mvwprintw(searchResults,i,0, "%s",results->Songs[i]->NiceName);
+            if(i==highlightLine){
+                wattroff(searchResults,COLOR_PAIR(1));
+            }
         }
         wrefresh(searchResults);
     }
