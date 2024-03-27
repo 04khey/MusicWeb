@@ -12,7 +12,7 @@
 const char ctrla = 1;
 const char ctrle = 5;
 const char ctrlf = 6;
-const char ctrlg = 7;
+const char ctrlg = 7; //also backspace.
 const char ctrlr = 18;
 const char ctrlt = 20;
 const char ctrlv = 22;
@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
     keypad(stdscr, TRUE); //don't echo arrow keys
     refresh(); //not sure why this is needed but it is
 
+ 
 
     char inkeys[2];
 
@@ -39,11 +40,11 @@ int main(int argc, char *argv[])
         //if(inkeys[0] == KEY_HOME
         //inkeys[1] = getch();
         
-       
+       printw("Keys pressed: %d ", inkeys[0]);
         if(inkeys[0] >0 && inkeys[0] < 27){
             printw("Ctrl+%c", 64 + inkeys[0] );
         } else if(inkeys[0] == 27){
-            inkeys[1] = getch();
+            inkeys[1] = wgetch(stdscr);
             printw("Alt + %c", inkeys[1]);
         } else {
                 printw("Keys pressed: %c ", inkeys[0]);

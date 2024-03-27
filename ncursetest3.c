@@ -8,10 +8,11 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 
-//header file test
+//header file stuff
 #include "utilityfuncs.h"
 typedef struct LIBRARY LIBRARY;
 typedef struct MUS_NODE MUS_NODE;
+typedef struct PLAYLIST PLAYLIST;
 
 /*
     Results of the exectest were: 
@@ -123,9 +124,9 @@ void writesickASCII(WINDOW *win){
 
 char* menuOptions[] = {
 "[0]:Edit existing playlist",
-"[1]:Create playlist from m3u file",
-"[2]:Create playlist from directory",
-"[3]:Play playlist",
+"[1]:Create playlist from m3u file (-i /path/to/playlist.m3u)",
+"[2]:Create playlist from directory (-d /path/to/dir/)",
+"[3]:Play playlist (-p /path/to/playlist.mw)",
 "[4]:Visualise playlist",
 "[5] Playlist to m3u",
 "[x] Exit"
@@ -147,19 +148,66 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
     clear();
     WINDOW* searchResults = newwin(HEIGHT-1,WIDTH,0,0); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* searchBar = newwin(1,WIDTH,HEIGHT-1,0);
+    int termHeight;
+    int termWidth;
+    getmaxyx(searchResults, termHeight, termWidth);
 
+    char searchBuffer[255];
+    strcpy(searchBuffer, "");
+
+
+    int selected = 0;
+    int input = 'x';
+    char inAsChar;
+    noecho();
+
+    keypad(searchBar, TRUE);
+
+    while(!selected){ //chars 32-126 inclusive allowed
+        mvwprintw(searchBar, 0, 0, "Search: %s          %d", searchBuffer, input);
+        wrefresh(searchBar);
+        input = wgetch(searchBar);
+        switch (input)
+        {
+        case KEY_BACKSPACE:
+            mvwprintw(searchResults, 0, 0, "HIT!: %s          ", searchBuffer);
+            searchBuffer[strlen(searchBuffer)-1]='\0';
+            break;
+        
+        default:
+        
+        if(input>31 && input < 127){
+            inAsChar = (char) input;
+            mvwprintw(searchResults, 0, 0, "HIT!: %d          ", input);
+            strncat(searchBuffer, &inAsChar, 1);
+        } else{
+            input = '\0';
+        }
+        break;
+        }
+    }
+    
+
+    
+
+    wrefresh(searchBar);
+    wgetch(searchResults);
 }
 
 void playlistFromDir(){
     clear();
     mvprintw(0,0, "enter music directory\n");
+
     echo();
+    curs_set(1); 
     refresh();
+
     char dirBuffer[255];
     getstr(dirBuffer);
     //mvprintw(2,0,"%s", dirBuffer);
     //refresh();
     noecho();
+    curs_set(0); //hide cursor. 0=hide,1=block,2=flashing block
     LIBRARY* dirlib = getSongsFromDir(dirBuffer);
     
     printw("Songs in Library: %d\n", dirlib->NumNodes);
@@ -170,8 +218,8 @@ void playlistFromDir(){
         printw("Num Links: %d\n", temp->NumLinks);
         printw("URI: %s\n", temp->FullURI);
     }
-    getch();
+    refresh();
 
-    //getUserEntryNode();
+    getUserEntryNode(dirlib);
     //WINDOW *searchBar = newwin(HEIGHT-7,WIDTH,7,0);
 }
