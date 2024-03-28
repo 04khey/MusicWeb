@@ -28,13 +28,15 @@ char* sickASCII[] = {
 "|_|  |_|\\__,_|___/ \\_/\\_/ \\___|_.__/"
 };
 
+//headers from this file
 void writesickASCII(WINDOW *win);
 void listOptions(WINDOW *win);
-void playlistFromDir();
+PLAYLIST* playlistFromDir();
 
 //globally useful
 int WIDTH;
 int HEIGHT;
+LIBRARY* passedLibrary; //will need to be referred to in playlist editing/creation.
 
 //https://tldp.org/HOWTO/NCURSES-Programming-HOWTO/windows.html lol
 int main(int argc, char *argv[]) 
@@ -84,6 +86,11 @@ int main(int argc, char *argv[])
             mvwprintw(stdscr,HEIGHT-1,0, "do thing now            ");
             playlistFromDir();
             wrefresh(bigWin);
+
+            //TEST
+            mvwprintw(stdscr,0,0, "First song in library: %s\nNum songs in library:%d", passedLibrary->Songs[0]->FullURI, passedLibrary->NumNodes);
+            wrefresh(stdscr);
+
             getch();
             selection = 'x';
             break;
@@ -144,7 +151,7 @@ void listOptions(WINDOW *win){
 }
 
 MUS_NODE* getUserEntryNode(LIBRARY* lib){
-    wclear(stdscr);//doesn't work?
+    wclear(stdscr);
 
     //colours test
     start_color();
@@ -163,7 +170,6 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
     strcpy(searchBuffer, "");
 
 
-    int selected = 0;
     int highlightLine =0;
     int input = 'x';
     char inAsChar;
@@ -176,12 +182,20 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
 
     results = searchLibrary(lib, searchBuffer);
 
+    for(int i=0;i<results->NumNodes;i++){
+            if(i==highlightLine){
+                wattron(searchResults,COLOR_PAIR(1));
+            }
+            mvwprintw(searchResults,i,0, "%s",results->Songs[i]->NiceName);
+            if(i==highlightLine){
+                wattroff(searchResults,COLOR_PAIR(1));
+            }
+        }
+    wrefresh(searchResults);
 
-    while(!selected){ //chars 32-126 inclusive allowed
+    while(69){ //chars 32-126 inclusive allowed
 
-        
-
-        mvwprintw(searchBar, 0, 0, "Search: %s          %d", searchBuffer, input);
+        mvwprintw(searchBar, 0, 0, "Search: %d %s          %d",highlightLine, searchBuffer, input);
         wrefresh(searchBar);
         input = wgetch(searchBar);
         switch (input)
@@ -204,10 +218,16 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
             highlightLine++;
         }
         break;
+        case KEY_ENTER:
+        case '\n':
+        if(results->NumNodes >0){
+            return results->Songs[highlightLine];
+            
+        }
+        break;
         default:
         if(input>31 && input < 127){
             inAsChar = (char) input;
-            mvwprintw(searchResults, 0, 0, "HIT!: %d          ", input);
             strncat(searchBuffer, &inAsChar, 1);
         } else{
             input = '\0';
@@ -215,7 +235,6 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
         break;
         }
         wclear(searchResults);
-
         
         results = searchLibrary(lib, searchBuffer);
 
@@ -226,7 +245,6 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
         for(int i=0;i<results->NumNodes;i++){
             if(i==highlightLine){
                 wattron(searchResults,COLOR_PAIR(1));
-                attron(A_BLINK);
             }
             mvwprintw(searchResults,i,0, "%s",results->Songs[i]->NiceName);
             if(i==highlightLine){
@@ -236,14 +254,14 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
         wrefresh(searchResults);
     }
     
-
     
 
-    wrefresh(searchBar);
-    wgetch(searchResults);
+    //wrefresh(searchBar);
+    //wgetch(searchResults);
 }
 
-void playlistFromDir(){
+PLAYLIST* playlistFromDir(){
+    PLAYLIST* outList = malloc(sizeof(PLAYLIST));
     clear();
     mvprintw(0,0, "enter music directory\n");
 
@@ -253,11 +271,17 @@ void playlistFromDir(){
 
     char dirBuffer[255];
     getstr(dirBuffer);
+
+    if(dirBuffer[strlen(dirBuffer)-1] != '/'){ //ls lets one get away with this, but we need it to be just so.
+        dirBuffer[strlen(dirBuffer) ] ='/';
+        dirBuffer[strlen(dirBuffer) ] ='\0';
+    }
     //mvprintw(2,0,"%s", dirBuffer);
     //refresh();
     noecho();
     curs_set(0); //hide cursor. 0=hide,1=block,2=flashing block
     LIBRARY* dirlib = getSongsFromDir(dirBuffer);
+    passedLibrary = dirlib;
     
     printw("Songs in Library: %d\n", dirlib->NumNodes);
     MUS_NODE* temp;
@@ -269,6 +293,22 @@ void playlistFromDir(){
     }
     refresh();
 
-    getUserEntryNode(dirlib);
-    //WINDOW *searchBar = newwin(HEIGHT-7,WIDTH,7,0);
+    MUS_NODE* EntryNode = getUserEntryNode(dirlib);
+
+    outList->NumEntryNodes=1;
+    outList->EntryNodes=malloc(1*sizeof(MUS_NODE*));
+    outList->EntryNodes[0] = EntryNode;
+    outList->NumNodesInPlaylist=1;
+    outList->NodesInPlayList=malloc(1*sizeof(MUS_NODE*));
+    outList->NodesInPlayList[0]=EntryNode;
+    outList->playlistName = malloc(2*sizeof(char));
+    outList->playlistName= "";
+
+    wclear(stdscr);
+
+    printw("Node selected: %s", outList->EntryNodes[0]->FullURI);
+    
+    wgetch(stdscr);
+
+    return outList;
 }
