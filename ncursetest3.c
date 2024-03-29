@@ -14,6 +14,9 @@ typedef struct LIBRARY LIBRARY;
 typedef struct MUS_NODE MUS_NODE;
 typedef struct PLAYLIST PLAYLIST;
 
+//useful macro
+#define NELEMS(x)  (sizeof(x) / sizeof((x)[0]))
+
 /*
     Results of the exectest were: 
     to run in any term: screen -d -m cmus;sleep 0.5;cmus-remote -q song1.mp3; cmus-remote -p
@@ -259,6 +262,78 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
     //wrefresh(searchBar);
     //wgetch(searchResults);
 }
+typedef struct NODESTACK{
+    MUS_NODE** stackBase;
+    int stackPointer; //points above top element of stack
+    //int maxSize; //=NELEMS(stackBase)
+
+} NODESTACK;
+
+NODESTACK* push(MUS_NODE* toPush, NODESTACK* stack){ //MUS_NODE** stackBase, int stackPointer, int maxSize
+    int maxOldSize=NELEMS(stack->stackBase);
+    if(stack->stackPointer==maxOldSize-1){ //double stack size
+        NODESTACK* newStack;
+        newStack->stackBase= malloc(maxOldSize*2*sizeof(MUS_NODE*));
+        for(int i=0;i<maxOldSize;i++){
+            newStack->stackBase[i]=stack->stackBase[i];
+        }
+        newStack->stackBase[maxOldSize]=toPush;
+        newStack->stackPointer=stack->stackPointer+1;
+        //newStack->maxSize=maxOldSize*2;
+        free(stack);
+        return newStack;
+    } else {
+        stack->stackBase[stack->stackPointer] = toPush;
+        stack->stackPointer++;
+        return stack;
+    }
+
+}
+MUS_NODE* peek(NODESTACK* stack){
+     if(stack->stackPointer>0){
+        return stack->stackBase[stack->stackPointer];
+    } else{
+        //idk. error?
+    }
+}
+MUS_NODE* pop(NODESTACK* stack){
+    MUS_NODE* out = peek(stack);
+    stack->stackPointer--;
+    return out;
+}
+int isStackEmpty(NODESTACK* stack){
+    return stack->stackPointer==0;
+}
+
+
+PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
+    /*
+        Prev Node: ...
+        Current node: ...
+
+    */
+
+    NODESTACK* nodesVisited = malloc(sizeof(NODESTACK));
+    nodesVisited->stackBase = malloc(20*sizeof(MUS_NODE*));
+    nodesVisited->stackPointer=0;
+
+    int tooltipsize = 4;
+    //divide width in 3.
+    //headers        currNode |  searchBar | currWeight ■■▨□□□□□□□ 0.25
+    WINDOW* currNode = newwin(1,WIDTH/3,0,0);
+    WINDOW* searchBar = newwin(1,WIDTH-(2*WIDTH/3),0,WIDTH/3);
+    WINDOW* currWeight = newwin(1,WIDTH/3,0,WIDTH-(2*WIDTH/3));
+    //static strip   navigation history |  search results | connected nodes:
+    WINDOW* navHistory = newwin(1,WIDTH/3,1,0);
+    WINDOW* searchReslts = newwin(1,WIDTH-(2*WIDTH/3),1,WIDTH/3);
+    WINDOW* connNodes = newwin(1,WIDTH/3,1,WIDTH-(2*WIDTH/3));
+    //big panes
+    WINDOW* navHistory = newwin(HEIGHT-tooltipsize,WIDTH/3,2,0); //int nlines, int ncols, int begin_y, int begin_x
+    WINDOW* searchResults = newwin(HEIGHT-tooltipsize,WIDTH-(2*WIDTH/3),2,WIDTH/3); //int nlines, int ncols, int begin_y, int begin_x
+    WINDOW* currNodeWeights = newwin(HEIGHT-tooltipsize,WIDTH/3,2,WIDTH-(2*WIDTH/3)); //int nlines, int ncols, int begin_y, int begin_x
+    WINDOW* tooltips = newwin(tooltipsize,WIDTH,HEIGHT-tooltipsize,0); //int nlines, int ncols, int begin_y, int begin_x
+    
+}
 
 PLAYLIST* playlistFromDir(){
     PLAYLIST* outList = malloc(sizeof(PLAYLIST));
@@ -305,6 +380,8 @@ PLAYLIST* playlistFromDir(){
     outList->playlistName= "";
 
     wclear(stdscr);
+
+    editPlayList(outList, passedLibrary);
 
     printw("Node selected: %s", outList->EntryNodes[0]->FullURI);
     
