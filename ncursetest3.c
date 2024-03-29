@@ -328,7 +328,7 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     WINDOW* searchReslts = newwin(1,WIDTH-(2*WIDTH/3),1,WIDTH/3);
     WINDOW* connNodes = newwin(1,WIDTH/3,1,WIDTH-(2*WIDTH/3));
     //big panes
-    WINDOW* navHistory = newwin(HEIGHT-tooltipsize,WIDTH/3,2,0); //int nlines, int ncols, int begin_y, int begin_x
+    WINDOW* navStack = newwin(HEIGHT-tooltipsize,WIDTH/3,2,0); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* searchResults = newwin(HEIGHT-tooltipsize,WIDTH-(2*WIDTH/3),2,WIDTH/3); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* currNodeWeights = newwin(HEIGHT-tooltipsize,WIDTH/3,2,WIDTH-(2*WIDTH/3)); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* tooltips = newwin(tooltipsize,WIDTH,HEIGHT-tooltipsize,0); //int nlines, int ncols, int begin_y, int begin_x
