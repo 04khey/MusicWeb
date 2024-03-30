@@ -7,9 +7,11 @@ int main(int argc, char *argv[])
         printf("%c",i);
     }
     printf("\n");
+    printf("↑→↓←🡐🡒🡑🡓 ↵⏎⇦⇧");
     char in=' ';
     while(in != 'x'){
         in = getchar();
         printf("%d", in);
     }
+    
 }

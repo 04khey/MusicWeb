@@ -289,12 +289,12 @@ NODESTACK* push(MUS_NODE* toPush, NODESTACK* stack){ //MUS_NODE** stackBase, int
     }
 
 }
-MUS_NODE* peek(NODESTACK* stack){
-     if(stack->stackPointer>0){
+MUS_NODE* peek(NODESTACK* stack){ //will crash if stackPointer <= 0. This is intentional.
+    // if(stack->stackPointer>0){
         return stack->stackBase[stack->stackPointer];
-    } else{
+    //} else{
         //idk. error?
-    }
+    //}
 }
 MUS_NODE* pop(NODESTACK* stack){
     MUS_NODE* out = peek(stack);
@@ -305,6 +305,10 @@ int isStackEmpty(NODESTACK* stack){
     return stack->stackPointer==0;
 }
 
+void weightToString(char* bufferToWrite, float weight){ //fix later.
+    snprintf(bufferToWrite, 12, "%3f", weight);
+}
+
 
 PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     /*
@@ -313,25 +317,84 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
 
     */
 
-    NODESTACK* nodesVisited = malloc(sizeof(NODESTACK));
-    nodesVisited->stackBase = malloc(20*sizeof(MUS_NODE*));
-    nodesVisited->stackPointer=0;
+   int tooltipsize = 4;
 
-    int tooltipsize = 4;
     //divide width in 3.
     //headers        currNode |  searchBar | currWeight ■■▨□□□□□□□ 0.25
     WINDOW* currNode = newwin(1,WIDTH/3,0,0);
     WINDOW* searchBar = newwin(1,WIDTH-(2*WIDTH/3),0,WIDTH/3);
-    WINDOW* currWeight = newwin(1,WIDTH/3,0,WIDTH-(2*WIDTH/3));
+    WINDOW* currWeight = newwin(1,WIDTH/3,0,(2*WIDTH/3));
     //static strip   navigation history |  search results | connected nodes:
     WINDOW* navHistory = newwin(1,WIDTH/3,1,0);
     WINDOW* searchReslts = newwin(1,WIDTH-(2*WIDTH/3),1,WIDTH/3);
-    WINDOW* connNodes = newwin(1,WIDTH/3,1,WIDTH-(2*WIDTH/3));
+    WINDOW* connNodes = newwin(1,WIDTH/3,1,(2*WIDTH/3));
+    mvwprintw(navHistory,0,0,"Navigation History:");
+    mvwprintw(searchReslts,0,0,"Search results:");
+    mvwprintw(connNodes,0,0,"Connected nodes:");
+    wrefresh(navHistory);
+    wrefresh(searchReslts);
+    wrefresh(connNodes);
+
     //big panes
     WINDOW* navStack = newwin(HEIGHT-tooltipsize,WIDTH/3,2,0); //int nlines, int ncols, int begin_y, int begin_x
-    WINDOW* searchResults = newwin(HEIGHT-tooltipsize,WIDTH-(2*WIDTH/3),2,WIDTH/3); //int nlines, int ncols, int begin_y, int begin_x
-    WINDOW* currNodeWeights = newwin(HEIGHT-tooltipsize,WIDTH/3,2,WIDTH-(2*WIDTH/3)); //int nlines, int ncols, int begin_y, int begin_x
+    WINDOW* searchResultsWin = newwin(HEIGHT-tooltipsize,WIDTH-(2*WIDTH/3),2,WIDTH/3); //int nlines, int ncols, int begin_y, int begin_x
+    WINDOW* currNodeWeights = newwin(HEIGHT-tooltipsize,WIDTH/3,2,(2*WIDTH/3)); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* tooltips = newwin(tooltipsize,WIDTH,HEIGHT-tooltipsize,0); //int nlines, int ncols, int begin_y, int begin_x
+
+    //probs not necessary
+    keypad(searchBar, TRUE);
+    
+
+    //vars for lookup
+    NODESTACK* nodesVisited = malloc(sizeof(NODESTACK));
+    nodesVisited->stackBase = malloc(20*sizeof(MUS_NODE*));
+    nodesVisited->stackPointer=0;
+
+
+    
+    int finishedEditing = 0;
+    char searchString[255];
+    strcpy(searchString, "");
+    LIBRARY* searchResults = malloc(sizeof(LIBRARY));
+    searchResults = searchLibrary(lib, searchString);
+    float currentWeight = 0.0f;
+    char weightAsString[12];
+    weightToString(weightAsString, currentWeight);
+
+    MUS_NODE* currentNode = inList->EntryNodes[0];
+
+    int input;
+
+    while(!finishedEditing){
+        //print out headers
+        mvwprintw(currNode, 0,0,"Current node: %s", currentNode->NiceName);
+        wrefresh(currNode);
+        mvwprintw(currWeight, 0,0,"Current weight: %s", weightAsString);
+        wrefresh(currWeight);
+        mvwprintw(searchBar, 0,0,"Search:");
+        wrefresh(searchBar);
+        //print out history stack
+        for(int i=0;i<nodesVisited->stackPointer;i++){
+            mvwprintw(navStack, i,0, "%s", nodesVisited->stackBase[i]->NiceName);
+        }
+        wrefresh(navStack);
+        //print out search results
+        searchResults = searchLibrary(lib, searchString);
+        for(int i=0;i<searchResults->NumNodes;i++){
+            mvwprintw(searchResultsWin, i,0,"%s", searchResults->Songs[i]->NiceName);
+        }
+        wrefresh(searchResultsWin);
+        //print out current node connections
+        for(int i=0;i<currentNode->NumLinks;i++){
+            mvwprintw(currNodeWeights,i,0,"[%3f] %s",currentNode->Weights[i],currentNode->Links[i]->NiceName);
+        }
+        wrefresh(currNodeWeights);
+        //now catch chars
+        mvwprintw(searchBar, 0,0,"Search:");
+        curs_set(2);
+        input=wgetch(searchBar);
+        curs_set(0);
+    }
     
 }
 
