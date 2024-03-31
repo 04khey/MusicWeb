@@ -28,10 +28,9 @@ screen
 # Feature checklist
 * Basic functionality                                               ☐
 * Lazy track selection (buffer) via cmus feedback                   ☐
-* read from STDIN                                                   ☐
-* playlist viewer (CLI)                                             ☐
-* Add node to existing playlist                                     ☐
-* Unicode support?                                                  ✓
+* playlist visualiser (open graphical window)                       ☐
+* Unicode support?                                                  ~ (accidental)
+* Real Unicode IME support                                          ☐
 * Better practice with types                                        ☐
 * Windows support via cygwin bundling                               ☐
 

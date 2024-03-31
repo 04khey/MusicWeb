@@ -20,7 +20,8 @@ typedef struct PLAYLIST PLAYLIST;
 /*
     Results of the exectest were: 
     to run in any term: screen -d -m cmus;sleep 0.5;cmus-remote -q song1.mp3; cmus-remote -p
-    to kill:            pkill cmus 
+    to kill:            pkill cmus
+    (assumes only 1 cmus instance, computer can launch cmus in 0.5s) 
 */
 
 char* sickASCII[] = {
@@ -306,7 +307,7 @@ int isStackEmpty(NODESTACK* stack){
 }
 
 void weightToString(char* bufferToWrite, float weight){ //fix later.
-    snprintf(bufferToWrite, 12, "%3f", weight);
+    snprintf(bufferToWrite, 12, "%.2f", weight);
 }
 
 
@@ -341,6 +342,16 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     WINDOW* currNodeWeights = newwin(HEIGHT-tooltipsize,WIDTH/3,2,(2*WIDTH/3)); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* tooltips = newwin(tooltipsize,WIDTH,HEIGHT-tooltipsize,0); //int nlines, int ncols, int begin_y, int begin_x
 
+    const char* tooltipString[3] = { //need a 3x3xn matrix for row, col#, string
+    "x:finish editing playlist\nEnter:add node with current weight", 
+    "Ctrl+w: reduce weight by weightstep\nAlt+s:enter new weight", 
+    "Alt+w: increase weight by weightstep"};
+    char* toolS1 = "x:finish editing playlist";
+    mvwprintw(tooltips, 0,0,"%s",toolS1);
+    mvwprintw(tooltips, 0,WIDTH/3,"%s",tooltipString[1]);
+    mvwprintw(tooltips, 0,(2*WIDTH/3),"%s",tooltipString[2]);
+    wrefresh(tooltips);
+
     //probs not necessary
     keypad(searchBar, TRUE);
     
@@ -349,7 +360,7 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     NODESTACK* nodesVisited = malloc(sizeof(NODESTACK));
     nodesVisited->stackBase = malloc(20*sizeof(MUS_NODE*));
     nodesVisited->stackPointer=0;
-
+    int searchHighlightColumn =0;
 
     
     int finishedEditing = 0;
@@ -357,7 +368,7 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     strcpy(searchString, "");
     LIBRARY* searchResults = malloc(sizeof(LIBRARY));
     searchResults = searchLibrary(lib, searchString);
-    float currentWeight = 0.0f;
+    float currentWeight = 1.0f;
     char weightAsString[12];
     weightToString(weightAsString, currentWeight);
 
@@ -389,10 +400,23 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
             mvwprintw(currNodeWeights,i,0,"[%3f] %s",currentNode->Weights[i],currentNode->Links[i]->NiceName);
         }
         wrefresh(currNodeWeights);
+        
+        //WHY MUST THIS BE HERE TO SHOW?!
+        mvwprintw(tooltips, 0,0,"%s",toolS1);
+    mvwprintw(tooltips, 0,WIDTH/3,"%s",tooltipString[1]);
+    mvwprintw(tooltips, 0,(2*WIDTH/3),"%s",tooltipString[2]);
+    wrefresh(tooltips); 
+
+
+
         //now catch chars
         mvwprintw(searchBar, 0,0,"Search:");
         curs_set(2);
         input=wgetch(searchBar);
+        //do case switch on input
+
+        //if tooltip hide pressed, clear tooltips...
+
         curs_set(0);
     }
     
