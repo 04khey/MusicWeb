@@ -323,11 +323,11 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     //divide width in 3.
     //headers        currNode |  searchBar | currWeight ■■▨□□□□□□□ 0.25
     WINDOW* currNode = newwin(1,WIDTH/3,0,0);
-    WINDOW* searchBar = newwin(1,WIDTH-(2*WIDTH/3),0,WIDTH/3);
+    WINDOW* searchBar = newwin(1,WIDTH-(2*WIDTH/3)-1,0,WIDTH/3);
     WINDOW* currWeight = newwin(1,WIDTH/3,0,(2*WIDTH/3));
     //static strip   navigation history |  search results | connected nodes:
     WINDOW* navHistory = newwin(1,WIDTH/3,1,0);
-    WINDOW* searchReslts = newwin(1,WIDTH-(2*WIDTH/3),1,WIDTH/3);
+    WINDOW* searchReslts = newwin(1,WIDTH-(2*WIDTH/3)-1,1,WIDTH/3);
     WINDOW* connNodes = newwin(1,WIDTH/3,1,(2*WIDTH/3));
     mvwprintw(navHistory,0,0,"Navigation History:");
     mvwprintw(searchReslts,0,0,"Search results:");
@@ -338,7 +338,7 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
 
     //big panes
     WINDOW* navStack = newwin(HEIGHT-tooltipsize,WIDTH/3,2,0); //int nlines, int ncols, int begin_y, int begin_x
-    WINDOW* searchResultsWin = newwin(HEIGHT-tooltipsize,WIDTH-(2*WIDTH/3),2,WIDTH/3); //int nlines, int ncols, int begin_y, int begin_x
+    WINDOW* searchResultsWin = newwin(HEIGHT-tooltipsize,WIDTH-(2*WIDTH/3)-1,2,WIDTH/3); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* currNodeWeights = newwin(HEIGHT-tooltipsize,WIDTH/3,2,(2*WIDTH/3)); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* tooltips = newwin(tooltipsize,WIDTH,HEIGHT-tooltipsize,0); //int nlines, int ncols, int begin_y, int begin_x
 
