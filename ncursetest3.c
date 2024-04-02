@@ -187,7 +187,7 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
 
     while(69){ 
 
-    if(doSearchWinIteration(searchBar, searchResults, searchBuffer, &highlightLine, lib, &outNode) == '\n'){
+    if(   (doSearchWinIteration(searchBar, searchResults, searchBuffer, &highlightLine, lib, &outNode)) == '\n'){
         return outNode;
     }
 
@@ -211,8 +211,8 @@ typedef struct NODESTACK{
 NODESTACK* push(MUS_NODE* toPush, NODESTACK* stack){ //MUS_NODE** stackBase, int stackPointer, int maxSize
     int maxOldSize=NELEMS(stack->stackBase);
     if(stack->stackPointer==maxOldSize-1){ //double stack size
-        NODESTACK* newStack;
-        newStack->stackBase= malloc(maxOldSize*2*sizeof(MUS_NODE*));
+        NODESTACK* newStack = malloc(sizeof(NODESTACK));
+        newStack->stackBase = malloc(maxOldSize*2*sizeof(MUS_NODE*));
         for(int i=0;i<maxOldSize;i++){
             newStack->stackBase[i]=stack->stackBase[i];
         }
@@ -236,7 +236,8 @@ MUS_NODE* peek(NODESTACK* stack){ //will crash if stackPointer <= 0. This is int
     //}
 }
 MUS_NODE* pop(NODESTACK* stack){
-    MUS_NODE* out = peek(stack);
+    MUS_NODE* out; 
+    out=peek(stack);
     stack->stackPointer--;
     return out;
 }
@@ -299,11 +300,13 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     
 
     //vars for lookup
+    //for left=undo
     NODESTACK* nodesVisited = malloc(sizeof(NODESTACK));
     nodesVisited->stackBase = malloc(20*sizeof(MUS_NODE*));
     nodesVisited->stackPointer=0;
     int searchHighlightColumn =0;
-
+    //for right=redo?
+    //not yet...
     
     int finishedEditing = 0;
     char searchString[255];
@@ -319,6 +322,7 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     MUS_NODE* toAddWeightTo = malloc(sizeof(MUS_NODE)); //needed for searchbar
 
     int input;
+   
 
     while(!finishedEditing){
         //print out headers
@@ -348,31 +352,42 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
         wrefresh(tooltips); 
 
          input=doSearchWinIteration(searchBar, searchResultsWin, searchString, &searchHighlightColumn, lib, &toAddWeightTo);
+         
         //print out current node connections
         for(int i=0;i<currentNode->NumLinks;i++){
             mvwprintw(currNodeWeights,i,0,"[%3f] %s",currentNode->Weights[i],currentNode->Links[i]->NiceName);
         }
         wrefresh(currNodeWeights);
         
-  
-
-
-
-        //now catch chars
-        //mvwprintw(searchBar, 0,0,"Search:");
-        //curs_set(2);
-        
-       
-        //curs_set(0);
-        //do case switch on input
+        mvwprintw(tooltips,2,2,"ynot");
+                 wrefresh(tooltips);
+         
         switch(input){
             case KEY_LEFT:
+            case 59:
             //check stack not empty
+            if(!isStackEmpty(nodesVisited)){
+                currentNode = pop(nodesVisited);
+                mvwprintw(tooltips,2,2,"curn: %s",currentNode->NiceName);
+                wrefresh(tooltips);
+                //push(redoStack, currentNode);
+            } else{
+                 mvwprintw(tooltips,2,2,"ynot");
+                 wrefresh(tooltips);
+            }
             //...
             break;
             case KEY_RIGHT:
+            case 58:
             //check there is a valid result
+            if((searchLibrary(lib, searchString)->NumNodes)>0){
+                currentNode=searchLibrary(lib, searchString)->Songs[searchHighlightColumn];
+                push(currentNode, nodesVisited);
+            }
+            break;
             default:
+            mvwprintw(tooltips,2,2,"key pressed: %d  ",input);
+            wrefresh(tooltips);
             break;
         }
 

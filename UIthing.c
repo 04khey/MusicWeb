@@ -16,8 +16,8 @@ typedef struct MUS_NODE MUS_NODE;
 
 int doSearchWinIteration(WINDOW* searchBar, WINDOW* searchResults, char* searchBuffer, int* highlightLine, LIBRARY* lib, MUS_NODE** outNode){
 
-        
-        int input;
+    
+        int input; //= malloc(sizeof(int));
         char inAsChar;
 
         char* truncatedFileName_temp;
@@ -44,10 +44,11 @@ int doSearchWinIteration(WINDOW* searchBar, WINDOW* searchResults, char* searchB
         }
         wrefresh(searchResults);
         //put this here because otherwise the above for loop writes over it if searchBar is below searchResults
-        mvwprintw(searchBar, 0, 0, "Search: %d %s          %d",*highlightLine, searchBuffer, input);
+        mvwprintw(searchBar, 0, 0, "Search: %d %s",*highlightLine, searchBuffer);
         wrefresh(searchBar);
 
         input = wgetch(searchBar);
+        mvwprintw(searchBar, 0, 0, "Search: %d %s          %d",*highlightLine, searchBuffer, input);
         switch (input)
         {
         case KEY_BACKSPACE:
@@ -61,6 +62,9 @@ int doSearchWinIteration(WINDOW* searchBar, WINDOW* searchResults, char* searchB
             (*highlightLine)--;
         }
         break;
+        case KEY_LEFT:
+        case KEY_RIGHT:
+        break; //otherwise these get ignored
         case KEY_DOWN:
         if(*highlightLine==results->NumNodes-1){
 
