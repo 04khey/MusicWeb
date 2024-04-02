@@ -269,7 +269,7 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     WINDOW* currWeight = newwin(1,WIDTH/3,0,(2*WIDTH/3));
     //static strip   navigation history |  search results | connected nodes:
     WINDOW* navHistory = newwin(1,WIDTH/3,1,0);
-    WINDOW* searchReslts = newwin(1,WIDTH-(2*WIDTH/3)-1,1,WIDTH/3);
+    WINDOW* searchReslts = newwin(1,WIDTH-(2*WIDTH/3)-1,1,WIDTH/3); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* connNodes = newwin(1,WIDTH/3,1,(2*WIDTH/3));
     mvwprintw(navHistory,0,0,"Navigation History:");
     mvwprintw(searchReslts,0,0,"Search results:");
@@ -279,9 +279,9 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     wrefresh(connNodes);
 
     //big panes
-    WINDOW* navStack = newwin(HEIGHT-tooltipsize,WIDTH/3,2,0); //int nlines, int ncols, int begin_y, int begin_x
-    WINDOW* searchResultsWin = newwin(HEIGHT-tooltipsize,WIDTH-(2*WIDTH/3)-1,2,WIDTH/3); //int nlines, int ncols, int begin_y, int begin_x
-    WINDOW* currNodeWeights = newwin(HEIGHT-tooltipsize,WIDTH/3,2,(2*WIDTH/3)); //int nlines, int ncols, int begin_y, int begin_x
+    WINDOW* navStack = newwin(HEIGHT-tooltipsize-2,WIDTH/3,2,0); //int nlines, int ncols, int begin_y, int begin_x
+    WINDOW* searchResultsWin = newwin(HEIGHT-tooltipsize-2,WIDTH-(2*WIDTH/3)-1,2,WIDTH/3); //int nlines, int ncols, int begin_y, int begin_x
+    WINDOW* currNodeWeights = newwin(HEIGHT-tooltipsize-2,WIDTH/3,2,(2*WIDTH/3)); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* tooltips = newwin(tooltipsize,WIDTH,HEIGHT-tooltipsize,0); //int nlines, int ncols, int begin_y, int begin_x
 
     const char* tooltipString[3] = { //need a 3x3xn matrix for row, col#, string
@@ -308,8 +308,8 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     int finishedEditing = 0;
     char searchString[255];
     strcpy(searchString, "");
-    LIBRARY* searchResults = malloc(sizeof(LIBRARY));
-    searchResults = searchLibrary(lib, searchString);
+    //LIBRARY* searchResults = malloc(sizeof(LIBRARY));
+    //searchResults = searchLibrary(lib, searchString);
     float currentWeight = 1.0f;
     char weightAsString[12];
     weightToString(weightAsString, currentWeight);
@@ -334,22 +334,27 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
         }
         wrefresh(navStack);
         //print out search results
+        /*
         searchResults = searchLibrary(lib, searchString);
         for(int i=0;i<searchResults->NumNodes;i++){
             mvwprintw(searchResultsWin, i,0,"%s", searchResults->Songs[i]->NiceName);
         }
-        wrefresh(searchResultsWin);
+        wrefresh(searchResultsWin);*/
+        
+        //WHY MUST THIS BE HERE TO SHOW?!
+        mvwprintw(tooltips, 0,0,"%s",toolS1);
+        mvwprintw(tooltips, 0,WIDTH/3,"%s",tooltipString[1]);
+        mvwprintw(tooltips, 0,(2*WIDTH/3),"%s",tooltipString[2]);
+        wrefresh(tooltips); 
+
+         input=doSearchWinIteration(searchBar, searchResultsWin, searchString, &searchHighlightColumn, lib, &toAddWeightTo);
         //print out current node connections
         for(int i=0;i<currentNode->NumLinks;i++){
             mvwprintw(currNodeWeights,i,0,"[%3f] %s",currentNode->Weights[i],currentNode->Links[i]->NiceName);
         }
         wrefresh(currNodeWeights);
         
-        //WHY MUST THIS BE HERE TO SHOW?!
-        mvwprintw(tooltips, 0,0,"%s",toolS1);
-    mvwprintw(tooltips, 0,WIDTH/3,"%s",tooltipString[1]);
-    mvwprintw(tooltips, 0,(2*WIDTH/3),"%s",tooltipString[2]);
-    wrefresh(tooltips); 
+  
 
 
 
@@ -357,9 +362,19 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
         //mvwprintw(searchBar, 0,0,"Search:");
         //curs_set(2);
         
-        input=doSearchWinIteration(searchBar, searchResultsWin, searchString, &searchHighlightColumn, lib, &toAddWeightTo);
+       
         //curs_set(0);
         //do case switch on input
+        switch(input){
+            case KEY_LEFT:
+            //check stack not empty
+            //...
+            break;
+            case KEY_RIGHT:
+            //check there is a valid result
+            default:
+            break;
+        }
 
         //if tooltip hide pressed, clear tooltips...
         

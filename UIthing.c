@@ -43,7 +43,7 @@ int doSearchWinIteration(WINDOW* searchBar, WINDOW* searchResults, char* searchB
             }
         }
         wrefresh(searchResults);
-
+        //put this here because otherwise the above for loop writes over it if searchBar is below searchResults
         mvwprintw(searchBar, 0, 0, "Search: %d %s          %d",*highlightLine, searchBuffer, input);
         wrefresh(searchBar);
 
