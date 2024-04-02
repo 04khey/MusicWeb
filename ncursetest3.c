@@ -10,6 +10,7 @@
 
 //header file stuff
 #include "utilityfuncs.h"
+#include "UIthing.h"
 typedef struct LIBRARY LIBRARY;
 typedef struct MUS_NODE MUS_NODE;
 typedef struct PLAYLIST PLAYLIST;
@@ -197,9 +198,11 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
         }
     wrefresh(searchResults);
 
+    MUS_NODE* outNode;
+
     while(69){ //chars 32-126 inclusive allowed
 
-        mvwprintw(searchBar, 0, 0, "Search: %d %s          %d",highlightLine, searchBuffer, input);
+        /*mvwprintw(searchBar, 0, 0, "Search: %d %s          %d",highlightLine, searchBuffer, input);
         wrefresh(searchBar);
         input = wgetch(searchBar);
         switch (input)
@@ -255,9 +258,14 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
                 wattroff(searchResults,COLOR_PAIR(1));
             }
         }
-        wrefresh(searchResults);
+        wrefresh(searchResults);*/
+    if(doSearchWinIteration(searchBar, searchResults, searchBuffer, &highlightLine, lib, &outNode) == '\n'){
+        return outNode;
     }
     
+    }
+    
+
     
 
     //wrefresh(searchBar);
@@ -317,6 +325,10 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
         Current node: ...
 
     */
+
+   wrefresh(stdscr);
+   mvwprintw(stdscr,0,0,"%d %s", inList->NumEntryNodes, inList->EntryNodes[0]->NiceName);
+   wrefresh(stdscr);
 
    int tooltipsize = 4;
 

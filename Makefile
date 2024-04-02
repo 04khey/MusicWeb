@@ -1,2 +1,2 @@
 default:
-	gcc ncursetest3.c utilityfuncs.c -lncurses -o ncurse
+	gcc ncursetest3.c utilityfuncs.c UIthing.c -lncurses -o ncurse
