@@ -27,13 +27,27 @@ int doSearchWinIteration(WINDOW* searchBar, WINDOW* searchResults, char* searchB
 
         truncatedFileName_temp = malloc(maxWidth+1*sizeof(char));
 
-        mvwprintw(searchBar, 0, 0, "Search: %d %s          %d",*highlightLine, searchBuffer, input);
-        wrefresh(searchBar);
-        input = wgetch(searchBar);
+        
 
 
         LIBRARY* results = searchLibrary(lib, searchBuffer);
 
+        for(int i=0;i<results->NumNodes;i++){
+            strncpy(truncatedFileName_temp, results->Songs[i]->NiceName, maxWidth); //iterate this over songs[i][offset] in a thread and passively redraw?
+            if(i==*highlightLine){
+                wattron(searchResults,COLOR_PAIR(1));
+            }
+            mvwprintw(searchResults,i,0, "%s",truncatedFileName_temp); 
+            if(i==*highlightLine){
+                wattroff(searchResults,COLOR_PAIR(1));
+            }
+        }
+        wrefresh(searchResults);
+
+        mvwprintw(searchBar, 0, 0, "Search: %d %s          %d",*highlightLine, searchBuffer, input);
+        wrefresh(searchBar);
+
+        input = wgetch(searchBar);
         switch (input)
         {
         case KEY_BACKSPACE:
@@ -78,7 +92,7 @@ int doSearchWinIteration(WINDOW* searchBar, WINDOW* searchResults, char* searchB
         if(results->NumNodes<=*highlightLine){
             *highlightLine=0;
         }
-
+        /*
         for(int i=0;i<results->NumNodes;i++){
             strncpy(truncatedFileName_temp, results->Songs[i]->NiceName, maxWidth); //iterate this over songs[i][offset] in a thread and passively redraw?
             if(i==*highlightLine){
@@ -89,7 +103,8 @@ int doSearchWinIteration(WINDOW* searchBar, WINDOW* searchResults, char* searchB
                 wattroff(searchResults,COLOR_PAIR(1));
             }
         }
-        wrefresh(searchResults);
+        wrefresh(searchResults);*/
+        
 
         return input;
     

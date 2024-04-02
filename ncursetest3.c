@@ -167,9 +167,10 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
     WINDOW* searchResults = newwin(HEIGHT-1,WIDTH,1,0); //int nlines, int ncols, int begin_y, int begin_x
     WINDOW* searchBar = newwin(1,WIDTH,HEIGHT-1,0);
     
+    /*
     int termHeight;
     int termWidth;
-    getmaxyx(searchResults, termHeight, termWidth);
+    getmaxyx(searchResults, termHeight, termWidth);*/
 
     char searchBuffer[255];
     strcpy(searchBuffer, "");
@@ -182,86 +183,15 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
 
     keypad(searchBar, TRUE);
 
-    LIBRARY* results;
-    //results->NumNodes=0;
-
-    results = searchLibrary(lib, searchBuffer);
-
-    for(int i=0;i<results->NumNodes;i++){
-            if(i==highlightLine){
-                wattron(searchResults,COLOR_PAIR(1));
-            }
-            mvwprintw(searchResults,i,0, "%s",results->Songs[i]->NiceName);
-            if(i==highlightLine){
-                wattroff(searchResults,COLOR_PAIR(1));
-            }
-        }
-    wrefresh(searchResults);
-
     MUS_NODE* outNode;
 
-    while(69){ //chars 32-126 inclusive allowed
+    while(69){ 
 
-        /*mvwprintw(searchBar, 0, 0, "Search: %d %s          %d",highlightLine, searchBuffer, input);
-        wrefresh(searchBar);
-        input = wgetch(searchBar);
-        switch (input)
-        {
-        case KEY_BACKSPACE:
-            mvwprintw(searchResults, 0, 0, "HIT!: %s          ", searchBuffer);
-            searchBuffer[strlen(searchBuffer)-1]='\0';
-        break;
-        case KEY_UP:
-        if(highlightLine==0){
-
-        } else {
-            highlightLine--;
-        }
-        break;
-        case KEY_DOWN:
-        if(highlightLine==results->NumNodes-1){
-
-        } else {
-            highlightLine++;
-        }
-        break;
-        case KEY_ENTER:
-        case '\n':
-        if(results->NumNodes >0){
-            return results->Songs[highlightLine];
-            
-        }
-        break;
-        default:
-        if(input>31 && input < 127){
-            inAsChar = (char) input;
-            strncat(searchBuffer, &inAsChar, 1);
-        } else{
-            input = '\0';
-        }
-        break;
-        }
-        wclear(searchResults);
-        
-        results = searchLibrary(lib, searchBuffer);
-
-        if(results->NumNodes<=highlightLine){
-            highlightLine=0;
-        }
-
-        for(int i=0;i<results->NumNodes;i++){
-            if(i==highlightLine){
-                wattron(searchResults,COLOR_PAIR(1));
-            }
-            mvwprintw(searchResults,i,0, "%s",results->Songs[i]->NiceName);
-            if(i==highlightLine){
-                wattroff(searchResults,COLOR_PAIR(1));
-            }
-        }
-        wrefresh(searchResults);*/
     if(doSearchWinIteration(searchBar, searchResults, searchBuffer, &highlightLine, lib, &outNode) == '\n'){
         return outNode;
     }
+
+    //wrefresh(stdscr);
     
     }
     
@@ -386,6 +316,8 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
 
     MUS_NODE* currentNode = inList->EntryNodes[0];
 
+    MUS_NODE* toAddWeightTo = malloc(sizeof(MUS_NODE)); //needed for searchbar
+
     int input;
 
     while(!finishedEditing){
@@ -422,14 +354,16 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
 
 
         //now catch chars
-        mvwprintw(searchBar, 0,0,"Search:");
-        curs_set(2);
-        input=wgetch(searchBar);
+        //mvwprintw(searchBar, 0,0,"Search:");
+        //curs_set(2);
+        
+        input=doSearchWinIteration(searchBar, searchResultsWin, searchString, &searchHighlightColumn, lib, &toAddWeightTo);
+        //curs_set(0);
         //do case switch on input
 
         //if tooltip hide pressed, clear tooltips...
-
-        curs_set(0);
+        
+        
     }
     
 }
