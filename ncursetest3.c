@@ -204,12 +204,15 @@ MUS_NODE* getUserEntryNode(LIBRARY* lib){
 typedef struct NODESTACK{
     MUS_NODE** stackBase;
     int stackPointer; //points above top element of stack
-    //int maxSize; //=NELEMS(stackBase)
+    int maxSize; //!=NELEMS(stackBase)
 
 } NODESTACK;
 
 NODESTACK* push(MUS_NODE* toPush, NODESTACK* stack){ //MUS_NODE** stackBase, int stackPointer, int maxSize
-    int maxOldSize=NELEMS(stack->stackBase);
+
+    int maxOldSize=stack->maxSize;//NELEMS(stack->stackBase); //no it doesn't
+
+
     if(stack->stackPointer==maxOldSize-1){ //double stack size
         NODESTACK* newStack = malloc(sizeof(NODESTACK));
         newStack->stackBase = malloc(maxOldSize*2*sizeof(MUS_NODE*));
@@ -218,7 +221,7 @@ NODESTACK* push(MUS_NODE* toPush, NODESTACK* stack){ //MUS_NODE** stackBase, int
         }
         newStack->stackBase[maxOldSize]=toPush;
         newStack->stackPointer=stack->stackPointer+1;
-        //newStack->maxSize=maxOldSize*2;
+        newStack->maxSize=maxOldSize*2;
         free(stack);
         return newStack;
     } else {
@@ -236,7 +239,7 @@ MUS_NODE* peek(NODESTACK* stack){ //will crash if stackPointer <= 0. This is int
     //}
 }
 MUS_NODE* pop(NODESTACK* stack){
-    MUS_NODE* out; 
+    MUS_NODE* out = malloc(sizeof(MUS_NODE)); 
     out=peek(stack);
     stack->stackPointer--;
     return out;
@@ -303,6 +306,7 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
     //for left=undo
     NODESTACK* nodesVisited = malloc(sizeof(NODESTACK));
     nodesVisited->stackBase = malloc(20*sizeof(MUS_NODE*));
+    nodesVisited->maxSize=20;
     nodesVisited->stackPointer=0;
     int searchHighlightColumn =0;
     //for right=redo?
@@ -364,7 +368,6 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
          
         switch(input){
             case KEY_LEFT:
-            case 59:
             //check stack not empty
             if(!isStackEmpty(nodesVisited)){
                 currentNode = pop(nodesVisited);
@@ -378,7 +381,6 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
             //...
             break;
             case KEY_RIGHT:
-            case 58:
             //check there is a valid result
             if((searchLibrary(lib, searchString)->NumNodes)>0){
                 currentNode=searchLibrary(lib, searchString)->Songs[searchHighlightColumn];
