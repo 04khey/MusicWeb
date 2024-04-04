@@ -32,6 +32,8 @@ screen
 * Unicode support?                                                  ~ (accidental)
 * Real Unicode IME support                                          ☐
 * Better practice with types                                        ☐
+* Config file for keybinds
+* Track seaching and metadata pulling
 * Windows support via cygwin bundling                               ☐
 
 # TODO
@@ -41,3 +43,4 @@ rewrite using ncurses
 * Spotify integration for wrapped boasting
 * Capacity to stream songs (would need some library indexing method)
 * GUI
+* Unethical spotify to mp3 script
