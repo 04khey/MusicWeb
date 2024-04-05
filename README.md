@@ -40,7 +40,7 @@ screen
 rewrite using ncurses
 
 # Others' Suggestions
-* Spotify integration for wrapped boasting
+* Spotify integration for wrapped boasting (use spotifyd instead of cmus, would require creating LIBRARY of urls rather than URIs (scan all songs in a massive playlist?), seems doable...)
 * Capacity to stream songs (would need some library indexing method)
 * GUI
 * Unethical spotify to mp3 script
