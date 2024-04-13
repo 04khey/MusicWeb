@@ -232,15 +232,14 @@ NODESTACK* push(MUS_NODE* toPush, NODESTACK* stack){ //MUS_NODE** stackBase, int
 
 }
 MUS_NODE* peek(NODESTACK* stack){ //will crash if stackPointer <= 0. This is intentional.
-    // if(stack->stackPointer>0){
-        return stack->stackBase[stack->stackPointer];
-    //} else{
-        //idk. error?
-    //}
+
+        return stack->stackBase[stack->stackPointer-1];
+
 }
 MUS_NODE* pop(NODESTACK* stack){
-    MUS_NODE* out = malloc(sizeof(MUS_NODE)); 
-    out=peek(stack);
+    MUS_NODE* out;
+    out = peek(stack);//malloc(sizeof(MUS_NODE)); 
+    //*out=*peek(stack);
     stack->stackPointer--;
     return out;
 }
@@ -357,9 +356,10 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
 
          input=doSearchWinIteration(searchBar, searchResultsWin, searchString, &searchHighlightColumn, lib, &toAddWeightTo);
          
+         wclear(currNodeWeights);
         //print out current node connections
         for(int i=0;i<currentNode->NumLinks;i++){
-            mvwprintw(currNodeWeights,i,0,"[%3f] %s",currentNode->Weights[i],currentNode->Links[i]->NiceName);
+            mvwprintw(currNodeWeights,i,0,"[%.3f] %s",currentNode->Weights[i],currentNode->Links[i]->NiceName);
         }
         wrefresh(currNodeWeights);
         
@@ -383,7 +383,17 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
             case KEY_RIGHT:
             //check there is a valid result
             if((searchLibrary(lib, searchString)->NumNodes)>0){
+
+                MUS_NODE* tempLastNode = currentNode;
+
                 currentNode=searchLibrary(lib, searchString)->Songs[searchHighlightColumn];
+                
+                currentNode->NumLinks=1;
+                currentNode->Weights = malloc(1 * sizeof(float));
+                currentNode->Links = malloc(1 * sizeof(MUS_NODE));
+                currentNode->Weights[0] = currentWeight;
+                currentNode->Links[0] = tempLastNode; 
+                
                 push(currentNode, nodesVisited);
             }
             break;
