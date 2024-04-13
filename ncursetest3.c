@@ -329,6 +329,7 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
 
     while(!finishedEditing){
         //print out headers
+        wclear(currNode);
         mvwprintw(currNode, 0,0,"Current node: %s", currentNode->NiceName);
         wrefresh(currNode);
         mvwprintw(currWeight, 0,0,"Current weight: %s", weightAsString);
@@ -336,6 +337,7 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
         mvwprintw(searchBar, 0,0,"Search:");
         wrefresh(searchBar);
         //print out history stack
+        wclear(navStack);
         for(int i=0;i<nodesVisited->stackPointer;i++){
             mvwprintw(navStack, i,0, "%s", nodesVisited->stackBase[i]->NiceName);
         }
@@ -367,10 +369,17 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
                  wrefresh(tooltips);
          
         switch(input){
-            case KEY_LEFT:
+            case KEY_LEFT: //TODO: prune link to MUS_NODE that did follow it...
             //check stack not empty
-            if(!isStackEmpty(nodesVisited)){
-                currentNode = pop(nodesVisited);
+            if(!isStackEmpty(nodesVisited) ){
+                
+                pop(nodesVisited);
+
+                if(nodesVisited->stackPointer==0){
+                    currentNode = inList->EntryNodes[0];
+                } else{
+                currentNode = peek(nodesVisited); 
+                }
                 mvwprintw(tooltips,2,2,"curn: %s",currentNode->NiceName);
                 wrefresh(tooltips);
                 //push(redoStack, currentNode);
