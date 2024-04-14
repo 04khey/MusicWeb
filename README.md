@@ -1,5 +1,5 @@
 # MusicWeb
-CLI Music playlist generator via traversal of 2D graph representation of music library. Spotify killer.
+CLI Music playlist generator via traversal of N-Dimensional graph representation of music library. Spotify killer.
 
 # Motivation
 Playlists don't cut it. Some songs fit into multiple playlists, or somewhere in-between two or more playlists.<br>
@@ -16,7 +16,7 @@ This structure allows for particularly complex playlist/DJ structures to be crea
 
 
 # Status
-Was paused since I realised the CLI needed to be rewritten using NCurses.
+**[In development]**<br>
 
 # Dependencies:
 ## Build: 
@@ -32,8 +32,8 @@ screen
 * Unicode support?                                                  ~ (accidental)
 * Real Unicode IME support                                          ☐
 * Better practice with types                                        ☐
-* Config file for keybinds
-* Track seaching and metadata pulling
+* Config file for keybinds                                          ☐
+* Track seaching and metadata pulling                               ☐
 * Windows support via cygwin bundling                               ☐
 
 # TODO
@@ -41,6 +41,7 @@ rewrite using ncurses
 
 # Others' Suggestions
 * Spotify integration for wrapped boasting (use spotifyd instead of cmus, would require creating LIBRARY of urls rather than URIs (scan all songs in a massive playlist?), seems doable...)
+* Use Last FM Scrobbling API for smae reasons as above 
 * Capacity to stream songs (would need some library indexing method)
 * GUI
-* Unethical spotify to mp3 script
+* Unethical spotify to mp3 script for convenient setup (outsource this?)
