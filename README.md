@@ -44,4 +44,4 @@ rewrite using ncurses
 * Use Last FM Scrobbling API for smae reasons as above 
 * Capacity to stream songs (would need some library indexing method)
 * GUI
-* Unethical spotify to mp3 script for convenient setup (outsource this?)
+* Unethical spotify to mp3 script for convenient setup?
