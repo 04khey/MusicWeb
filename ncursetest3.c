@@ -400,7 +400,7 @@ PLAYLIST* editPlayList(PLAYLIST* inList, LIBRARY* lib){
                 currentNode->NumLinks=1;
                 currentNode->Weights = malloc(1 * sizeof(float));
                 currentNode->Links = malloc(1 * sizeof(MUS_NODE));
-                currentNode->Weights[0] = currentWeight;
+                currentNode->Weights[0] = currentWeight;//10:27
                 currentNode->Links[0] = tempLastNode; 
                 
                 push(currentNode, nodesVisited);
