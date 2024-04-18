@@ -13,7 +13,7 @@ A 'trail' can be left behind to discourage recently listened nodes from being pl
 A 'tonal super skip' can be implemented by jumping along many nodes, or to a tagged genre node. <br>
 This structure allows for particularly complex playlist/DJ structures to be created, and contains normal playlist files as a subset.
 
-
+streak
 
 # Status
 **[In development]**<br>
