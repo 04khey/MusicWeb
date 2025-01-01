@@ -1,5 +1,5 @@
 # MusicWeb
-CLI Music playlist generator via traversal of N-Dimensional graph representation of music library. Spotify killer.
+CLI Music playlist generator via traversal of N-Dimensional graph representation of music library.
 
 # Motivation
 Playlists don't cut it. Some songs fit into multiple playlists, or somewhere in-between two or more playlists.<br>
