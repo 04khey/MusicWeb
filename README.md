@@ -1,5 +1,5 @@
 # MusicWeb
-CLI Music playlist generator via traversal of N-Dimensional graph representation of music library.
+CLI Music playlist generator via traversal of graph representation of music library.
 
 # Motivation
 Playlists don't cut it. Some songs fit into multiple playlists, or somewhere in-between two or more playlists.<br>
@@ -40,7 +40,7 @@ rewrite using ncurses
 
 # Others' Suggestions
 * Spotify integration for wrapped boasting (use spotifyd instead of cmus, would require creating LIBRARY of urls rather than URIs (scan all songs in a massive playlist?), seems doable...)
-* Use Last FM Scrobbling API for smae reasons as above 
+* Use Last FM Scrobbling API for same reasons as above 
 * Capacity to stream songs (would need some library indexing method)
 * GUI
 * Unethical spotify to mp3 script for convenient setup?
